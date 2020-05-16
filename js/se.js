@@ -1,6 +1,6 @@
 /**
  * SysError.js: A portable JavaScript framework to manage any HTML-related components on the fly.
- * @author SysError_ <twitter.com/syserror_> <
+ * @author SysError_
  * @version 0.1
  */
 /**
