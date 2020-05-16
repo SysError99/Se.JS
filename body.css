@@ -1,0 +1,272 @@
+/*----ตารางตึก----*/
+@import url(https://fonts.googleapis.com/css?family=Roboto:400,500,700,300,100);
+
+body {
+  font-family: "Roboto", helvetica, arial, sans-serif;
+  font-size: 24px;
+  font-weight: 400;
+  text-rendering: optimizeLegibility;
+}
+
+.header {
+  padding: 60px;
+  text-align: center;
+  background: #60af4c;
+  color: white;
+  font-size: 24px;
+}
+
+div.table-title {
+  display: block;
+  margin: auto;
+  max-width: 600px;
+  padding:5px;
+  width: 100%;
+}
+
+.table-title h3 {
+   color: #fafafa;
+   font-size: 128px;
+   font-weight: 400;
+   font-style:normal;
+   font-family: "Roboto", helvetica, arial, sans-serif;
+   text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1);
+   text-transform:uppercase;
+}
+
+
+/*** Table Styles **/
+
+.table-fill {
+  background: white;
+  border-radius:3px;
+  border-collapse: collapse;
+  height: 320px;
+  margin: auto;
+  max-width: 600px;
+  padding:5px;
+  width: 100%;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  animation: float 5s infinite;
+}
+ 
+th {
+  color:#D5DDE5;;
+  background:#1b1e24;
+  border-bottom:4px solid #9ea7af;
+  border-right: 1px solid #343a45;
+  font-size:23px;
+  font-weight: 100;
+  padding:24px;
+  text-align:left;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+  vertical-align:middle;
+}
+
+th:first-child {
+  border-top-left-radius:3px;
+}
+ 
+th:last-child {
+  border-top-right-radius:3px;
+  border-right:none;
+}
+  
+tr {
+  border-top: 1px solid #C1C3D1;
+  border-bottom: 1px solid #C1C3D1;
+  color:#666B85;
+  font-size:16px;
+  font-weight:normal;
+  text-shadow: 0 1px 1px rgba(256, 256, 256, 0.1);
+}
+ 
+tr:hover td {
+  background:#4E5066;
+  color:#FFFFFF;
+  border-top: 1px solid #22262e;
+}
+ 
+tr:first-child {
+  border-top:none;
+}
+
+tr:last-child {
+  border-bottom:none;
+}
+ 
+tr:nth-child(odd) td {
+  background:#EBEBEB;
+}
+ 
+tr:nth-child(odd):hover td {
+  background:#4E5066;
+}
+
+tr:last-child td:first-child {
+  border-bottom-left-radius:3px;
+}
+ 
+tr:last-child td:last-child {
+  border-bottom-right-radius:3px;
+}
+td {
+  background:#FFFFFF;
+  padding:20px;
+  text-align:left;
+  vertical-align:middle;
+  font-weight:300;
+  font-size:18px;
+  text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.1);
+  border-right: 1px solid #C1C3D1;
+}
+
+td:last-child {
+  border-right: 0px;
+}
+
+th.text-left {
+  text-align: left;
+}
+
+th.text-center {
+  text-align: center;
+}
+
+th.text-right {
+  text-align: right;
+}
+
+td.text-left {
+  text-align: left;
+}
+
+td.text-center {
+  text-align: center;
+}
+
+td.text-right {
+  text-align: right;
+}
+/* navbar*/
+/*menu*/
+.topnav {
+    overflow: hidden;
+    background-color: #333;
+    position: relative;
+    border-radius: 5px;
+}
+.topnav a {
+    color: white;
+    padding: 10px ;
+    text-decoration: none;
+    font-size: 20px;
+    display: block;
+    border-radius: 8px;
+}
+.topnav a:hover {
+    background-color: #4CAF50;
+    color: white;
+}
+/*submenu*/
+.topnav-menu {
+    overflow: hidden;
+    background-color: white;
+    position: relative;
+    border-radius: 5px;
+}
+.topnav-menu a {
+    color: black;
+    padding: 10px ;
+    text-decoration: none;
+    font-size: 20px;
+    display: block;
+    border-radius: 8px;
+}
+.topnav-menu a:hover {
+    background-color: #309645;
+    color: white;
+}
+.active {
+    /*background-color: #4CAF50;*/
+    color: black;
+}
+/*-----รายละเอียดผู้ติดต่อ-----*/
+input[type=button], input[type=reset], input[type=submit], select {
+    width: 100%;
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size:24px;
+  }
+  
+input[type=button], input[type=reset], input[type=submit]  {
+    width: 100%;
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size:24px;
+  }
+  
+input[type=button], input[type=reset], input[type=submit]:hover {
+    background-color: #45a049;
+}
+
+div {
+    border-radius: 5px;
+    background-color: #f2f2f2;
+    padding: 20px;
+}
+
+/*----------ปุ่มกด----------*/
+.button {
+    background-color: #4CAF50; /* Green */
+    border-radius: 8px;
+    border: none;
+    color: white;
+    width:99%;
+    padding: 18px 48px;
+    justify-content: center;
+    text-align: center;
+    text-decoration: none;
+    display: flex;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+.button-small {
+    background-color: #008CBA;
+    border-radius: 8px;
+    border: none;
+    color: white;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+.button-red {
+    background-color: #c43b57;
+}
+.button-blue {
+    background-color: #008CBA;
+}
+.button-green {
+    background-color: #4CAF50; /* Green */
+}
+
+/*----contentbox----*/
+.contentbox {
+    background: rgb(241,241,241);
+    border: 0.5px solid gray;
+    margin: 0;
+}
