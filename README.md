@@ -151,7 +151,7 @@ let data = {
     like: 5,
     comment:[
         {
-            id: 1234,
+            id: 5678,
             name: "jenny9228",
             desc: "That looks cool really!",
             year: 2020,
@@ -440,7 +440,7 @@ let data = {
     like: 5,
     comment:[
         {
-            id: 1234,
+            id: 5678,
             name: "jenny9228",
             desc: "That looks cool really!",
             year: 2020,
