@@ -138,7 +138,7 @@ $.ajax({
 ```
 This may not look like a big deal. But what if your data have plenty of them, or they are stacked up, like this social media's post:
 ```javascript
-data = {
+let data = {
     id: 1234,
     name: "johnmccrane0420",
     desc: "Nice trip today! :D",
@@ -267,7 +267,7 @@ Every object in JavaScript has an ability to store their properties. If you want
 
 Now we're able to render our object properties in our component, but what about array? In the example data, we have 2 stacks of the array, so what to do next? Simple, just put them in an `array bracket`! Let's have a look at our data again, now I will simplify them just to do you get the point:
 ```javascript
-data = {
+let data = {
     //... object properties here...//
     comment:[
         {
@@ -427,7 +427,7 @@ Se.res("comp","post",`
     </div>
 `)
 //A data
-data = {
+let data = {
     id: 1234,
     name: "johnmccrane0420",
     desc: "Nice trip today! :D",
@@ -459,7 +459,7 @@ data = {
                     month: 4,
                     day: 20,
                     hour: 20,
-                    min: 04,
+                    min: 4,
                     img: "",
                     like: 0
                 },
