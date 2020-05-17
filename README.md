@@ -361,3 +361,125 @@ Now let's put `array bracket`s in! It should look like this:
 
     </div>
 ```
+And that's it! Now you have complete reusable component for your web page. Let's put some code to make a magic happen! Do you still remember component name of this example? It is `"post"`! Now put it in `Se.comp()` function!
+```javascript
+//This command creates a component, then instantly show the result.
+window.postComponent = Se.comp("post",data)
+```
+To summarise, all of the rest should look like this:
+```javascript
+import * as Se from "./js/se.js"
+
+//A reusable component.
+Se.res("comp","post",`
+    <div id="$id-post" class="post">
+
+        <!-- Post -->
+        <div id="$id-header">
+            <h1>$name</h1>
+            $day-$month-$year $hour:$min
+        </div>
+
+        <p>$desc</p>
+        
+        <div class="post-img"> <img src="$img"> </div>
+        
+        <div class="post-comment">
+        
+        $comment{ <!-- Comments -->
+            
+            <div id="$id-post" class="comment">
+
+                <div id="$id-header">
+                    <h2>$name</h2> $day-$month-$year $hour:$min
+                </div>
+                    
+                <p>$desc</p>
+                
+                <div id="post-img"> <img src="$img"> </div>
+                
+                <div class="post-sub-comment">
+                
+                $comment{ <!-- Sub Comments -->
+                    
+                    <div id="id-post" class="sub-comment">
+                        
+                        <div id="$id-header">
+                            <h3>$name</h3> $day-$month-$year $hour:$min
+                        </div>
+                            
+                        <p>$desc</p>
+                        
+                        <div id="post-img"> <img src="$img"> </div>
+                        
+                    </div>
+                    
+                }comment$ <!-- End Sub Comments -->
+
+                </div>
+
+            </div>
+            
+        }comment$ <!-- End Comments -->
+
+        <div>
+
+    </div>
+`)
+//A data
+data = {
+    id: 1234,
+    name: "johnmccrane0420",
+    desc: "Nice trip today! :D",
+    year: 2020,
+    month: 4,
+    day: 20,
+    hour: 17,
+    min: 30,
+    img: "https://cdn.social.media/0123456789.png",
+    like: 5,
+    comment:[
+        {
+            id: 1234,
+            name: "jenny9228",
+            desc: "That looks cool really!",
+            year: 2020,
+            month: 4,
+            day: 20,
+            hour: 19,
+            min: 10,
+            img: "",
+            like: 2,
+            comment:[
+                {
+                    id:9024,
+                    name:"elmotttt",
+                    desc: "I think so too!",
+                    year: 2020,
+                    month: 4,
+                    day: 20,
+                    hour: 20,
+                    min: 04,
+                    img: "",
+                    like: 0
+                },
+                {
+                    id:9024,
+                    name:"nickrareman",
+                    desc: "Couldn't agree more!",
+                    year: 2020,
+                    month: 4,
+                    day: 20,
+                    hour: 20,
+                    min: 33,
+                    img: "",
+                    like: 0
+                }
+            ]
+        }
+    ]
+}
+//Create and show the result.
+window.postComponent = Se.comp("post",data)
+```
+And we are all set for this part!
