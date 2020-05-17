@@ -238,26 +238,31 @@ export function compClean(seComp){
     _seIntervalTimeout(seCompWaiter)
 }
 function _seCompParse(seData, seCompStr){//parse component
-    var _seDataKey
     var _seResult = seCompStr
-    if(_seResult.indexOf("${")!==-1){ //sub component
-        var _seSubComp = _seResult.substring(_seResult.indexOf("${")+2,_seResult.lastIndexOf("}$"))//extract sub component
-        var _seSubCompResult = ""
-        if(Array.isArray(seData.$)){//$ exists
-            for(_seDataKey in seData.$){
-                if(typeof seData.$[_seDataKey] === "object") _seSubCompResult += _seCompParse(seData.$[_seDataKey], _seSubComp)//object
-                else _seSubCompResult += _seSubComp.split("$[]").join(seData.$[_seDataKey])//non-object
-                _seSubCompResult = _seSubCompResult.split("$?").join(_seDataKey)//array number
-            }
-        }_seResult = _seResult.split("${"+_seSubComp+"}$").join(_seSubCompResult)
-        if(_seResult.indexOf("!{")!==-1){//component (when empty)
-            var _seEmptyComp = _seResult.substring(_seResult.indexOf("!{")+2,_seResult.lastIndexOf("}!"))//extract
-            var _seResultSplit = _seResult.split("!{"+_seEmptyComp+"}!")
-            if(_seSubCompResult === "") _seResult = _seResultSplit.join(_seEmptyComp) //no data
-            else _seResult = _seResultSplit.join("")//data
+    
+    var _seDataKey, _seArrKey
+    for(_seDataKey in seData) {
+        if(typeof seData[_seDataKey] === "object") { //array or obj
+            var _seSubCompFront = _seDataKey+"{"
+            if(_seResult.indexOf(_seDataKey+"{")!==-1){
+                var _seEmptyComp = "" //empty component
+                var _seEmptyCompFront = "!"+_seDataKey+"{"
+                if(_seResult.indexOf(_seEmptyCompFront)!==-1){
+                    _seEmptyComp = _seResult.substring(_seResult.indexOf(_seEmptyCompFront)+_seEmptyCompFront.length, _seResult.lastIndexOf("}"+_seDataKey+"!"))//extract
+                    _seResult = _seResult.split(_seEmptyCompFront+_seEmptyComp+"}"+_seDataKey+"!").join("")
+                }
+                var _seSubCompResult = "" //sub component
+                var _seSubComp = _seResult.substring(_seResult.indexOf(_seSubCompFront)+_seSubCompFront.length, _seResult.lastIndexOf("}"+_seDataKey))//extract
+                for(_seArrKey in seData[_seDataKey]){ //find keys
+                    if(typeof seData[_seDataKey][_seArrKey] === "object") _seSubCompResult += _seCompParse(seData[_seDataKey][_seArrKey], _seSubComp)//object
+                    else _seSubCompResult += _seSubComp.split("$[]").join(seData[_seDataKey][_seArrKey]) //non-object
+                    _seSubCompResult = _seSubCompResult.split("$?").join(_seArrKey) //array number
+                }if(_seSubCompResult === "") _seSubCompResult = _seEmptyComp//if emoty
+                _seResult = _seResult.split(_seSubCompFront+_seSubComp+"}"+_seDataKey).join(_seSubCompResult)
+            }else _seSubCompEnd = true
         }
+        else _seResult = _seResult.split("$"+_seDataKey).join(seData[_seDataKey])//others
     }
-    for(_seDataKey in seData) if(typeof seData[_seDataKey] !== "object") _seResult = _seResult.split("$"+_seDataKey).join(seData[_seDataKey])//others
     return _seResult
 }
 function _seIntervalTimeout(_seInterval){//kill interval if out of time
