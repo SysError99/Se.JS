@@ -34,6 +34,7 @@ Then, put this HTML code to your page we've created recently. Prefer `<head>` pa
     <script type="module" src="index.js"></script>
 ```
 And we are all set! Now we can learn more from here.
+
 ---
 ## Page Module
 
