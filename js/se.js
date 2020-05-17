@@ -239,29 +239,38 @@ export function compClean(seComp){
 }
 function _seCompParse(seData, seCompStr){//parse component
     var _seResult = seCompStr
-    
     var _seDataKey, _seArrKey
     for(_seDataKey in seData) {
-        if(typeof seData[_seDataKey] === "object") { //array or obj
-            var _seSubCompFront = _seDataKey+"{"
-            if(_seResult.indexOf(_seDataKey+"{")!==-1){
-                var _seEmptyComp = "" //empty component
-                var _seEmptyCompFront = "!"+_seDataKey+"{"
-                if(_seResult.indexOf(_seEmptyCompFront)!==-1){
-                    _seEmptyComp = _seResult.substring(_seResult.indexOf(_seEmptyCompFront)+_seEmptyCompFront.length, _seResult.lastIndexOf("}"+_seDataKey+"!"))//extract
-                    _seResult = _seResult.split(_seEmptyCompFront+_seEmptyComp+"}"+_seDataKey+"!").join("")
-                }
-                var _seSubCompResult = "" //sub component
-                var _seSubComp = _seResult.substring(_seResult.indexOf(_seSubCompFront)+_seSubCompFront.length, _seResult.lastIndexOf("}"+_seDataKey))//extract
-                for(_seArrKey in seData[_seDataKey]){ //find keys
-                    if(typeof seData[_seDataKey][_seArrKey] === "object") _seSubCompResult += _seCompParse(seData[_seDataKey][_seArrKey], _seSubComp)//object
-                    else _seSubCompResult += _seSubComp.split("$[]").join(seData[_seDataKey][_seArrKey]) //non-object
-                    _seSubCompResult = _seSubCompResult.split("$?").join(_seArrKey) //array number
-                }if(_seSubCompResult === "") _seSubCompResult = _seEmptyComp//if emoty
-                _seResult = _seResult.split(_seSubCompFront+_seSubComp+"}"+_seDataKey).join(_seSubCompResult)
-            }else _seSubCompEnd = true
+        var _seEmptyComp = "" //empty component
+        var _seEmptyCompFront = "!"+_seDataKey+"{"
+        var _seEmptyCompIndex = _seResult.indexOf(_seEmptyCompFront)
+        if(_seEmptyCompIndex!==-1){
+            var _seEmptyCompBack = "}"+_seDataKey+"!"
+            _seEmptyComp = _seResult.substring(_seEmptyCompIndex+_seEmptyCompFront.length, _seResult.lastIndexOf(_seEmptyCompBack))//extract
+            _seResult = _seResult.split(_seEmptyCompFront+_seEmptyComp+_seEmptyCompBack).join("")
         }
-        else _seResult = _seResult.split("$"+_seDataKey).join(seData[_seDataKey])//others
+        if(typeof seData[_seDataKey] === "object") { //array or obj
+            var _seSubCompFront = "$"+_seDataKey+"{"
+            var _seSubCompIndex = _seResult.indexOf(_seSubCompFront)
+            if(_seSubCompIndex!==-1){
+                var _seSubCompData = "" //sub component
+                var _seSubCompBack = "}"+_seDataKey+"$"
+                var _seSubComp = _seResult.substring(_seSubCompIndex+_seSubCompFront.length, _seResult.lastIndexOf(_seSubCompBack))//extract
+                for(_seArrKey in seData[_seDataKey]){ //data in array
+                    if(typeof seData[_seDataKey][_seArrKey] === "object") _seSubCompData += _seCompParse(seData[_seDataKey][_seArrKey], _seSubComp)//object
+                    else _seSubCompData += _seSubComp.split("$[]").join(seData[_seDataKey][_seArrKey]) //non-object
+                    _seSubCompData = _seSubCompData.split("$?").join(_seArrKey) //array number
+                }if(_seSubCompData === "") _seSubCompData = _seEmptyComp//if emoty
+                _seResult = _seResult.split(_seSubCompFront+_seSubComp+_seSubCompBack).join(_seSubCompData)
+            }
+        }else{ //others
+            if(
+                Number.isNaN(seData[_seDataKey]) ||
+                seData[_seDataKey] === null ||
+                seData[_seDataKey] === ""
+            ) _seResult = _seResult.split("$"+_seDataKey).join(_seEmptyComp) //none or invalid data
+            else _seResult = _seResult.split("$"+_seDataKey).join(seData[_seDataKey])
+        }
     }
     return _seResult
 }

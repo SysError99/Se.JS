@@ -12,15 +12,15 @@ Se.res("comp","table",`
         <th>Hates</th>
         <th>Action</th>
     </tr>
-    contact{
+    $contact{
         <tr>    
-            <td>$name</td>
+            <td>$name</td> !name{No name}name!
             <td>$phone</td>
             <td>
                 <ol>
-                like{
+                $like{
                     <li>$[]</li>
-                }like
+                }like$
                 !like{
                     <p>No likes</p>
                 }like!
@@ -28,9 +28,9 @@ Se.res("comp","table",`
             </td>
             <td>
                 <ol>
-                hate{
+                $hate{
                     <li>$[]</li>
-                }hate
+                }hate$
                 !hate{
                     <p>No hates</p>
                 }hate!
@@ -40,7 +40,7 @@ Se.res("comp","table",`
                 <button onclick="like('$name')">Like</button>
             </td>
         </tr>
-    }contact
+    }contact$
 </table>
 !contact{
     <h1>No Contacts!</h1>
@@ -55,7 +55,7 @@ window.x = Se.comp("table","root",{
             hate:["spider","cockroach"]
         },
         {
-            name: "kanjana",
+            name: "",
             phone: "088-888-8888",
             like:[],
             hate:[]

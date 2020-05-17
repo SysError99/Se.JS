@@ -106,3 +106,258 @@ In the complete web page, it should look like this:
 </html>
 ```
 Vala, we have done with the Page Module!
+
+---
+## Component
+
+In dynamic websites, they take request from users, process them, then send results back. Basically, in some web servers, they take care all of tasks and send them to user statically. Everything happened request by request, a new request means an entire new webpage to be created and send back to user. This may not be a problem for websites that are no need using real-time data. But when you need a real-time responsive website. Constantly forcing the web page to reload is probably not ideal. So, another approach need to be applied to achieve this.
+
+Basically, using jQuery/AJAX can achieve this and give a result you expected, like this:
+```javascript
+$.ajax({
+    url: "getData.php" ,
+    type: "POST",
+    data: ''
+}).success(function(result) {
+    var obj = jQuery.parseJSON(result);
+    if(obj != ''){
+        $("#body").empty();
+        $.each(obj, function(key, val) {
+            var tr = "<tr>";
+            tr = tr + "<td>" + val["CustomerID"] + "</td>";
+            tr = tr + "<td>" + val["Name"] + "</td>";
+            tr = tr + "<td>" + val["Email"] + "</td>";
+            tr = tr + "<td>" + val["CountryCode"] + "</td>";
+            tr = tr + "<td>" + val["Budget"] + "</td>";
+            tr = tr + "<td>" + val["Used"] + "</td>";
+            tr = tr + "</tr>";
+            $('#table > tbody:last').append(tr);
+        });
+    }
+});
+```
+This may not look like a big deal. But what if your data have plenty of them, or they are stacked up, like this social media's post:
+```javascript
+data = {
+    id: 1234,
+    name: "johnmccrane0420",
+    desc: "Nice trip today! :D",
+    year: 2020,
+    month: 4,
+    day: 20,
+    hour: 17,
+    min: 30,
+    img: "https://cdn.social.media/0123456789.png",
+    like: 5,
+    comment:[
+        {
+            id: 1234,
+            name: "jenny9228",
+            desc: "That looks cool really!",
+            year: 2020,
+            month: 4,
+            day: 20,
+            hour: 19,
+            min: 10,
+            img: "",
+            like: 2,
+            comment:[
+                {
+                    id:9024,
+                    name:"elmotttt",
+                    desc: "I think so too!",
+                    year: 2020,
+                    month: 4,
+                    day: 20,
+                    hour: 20,
+                    min: 04,
+                    img: "",
+                    like: 0
+                },
+                {
+                    id:9024,
+                    name:"nickrareman",
+                    desc: "Couldn't agree more!",
+                    year: 2020,
+                    month: 4,
+                    day: 20,
+                    hour: 20,
+                    min: 33,
+                    img: "",
+                    like: 0
+                }
+            ]
+        }
+    ]
+}
+```
+This can be a nightmare, and extremely hard to maintain a clean and reusable code. But in Se.JS, this can be solved quickly and easily. Let's get started.
+
+In your web page javascript file, use function `Se.res()` to create a reusable `component` resource for the page, then write base of HTML file for this data.
+
+If we figure out how the data looks like, so there are 3 sub parts of them, so our HTML component should look like this:
+```javascript
+import * as Se from "./js/se.js"
+
+//Create a component for our post data.
+Se.res("comp","post",`
+    <!--HTML Goes Here--->
+`)
+```
+When `"comp"` stands for the `component` (other res types can also be used, including `"css"`, `"html"`, `"js"`, but they are more easier using attributes in the HTML file), `"post"` stands for component name, and the last parameter is where we put HTML code in. But before continue, we need to understand how the component works first.
+
+---
+### Object Properties
+
+Every object in JavaScript has an ability to store their properties. If you want to render them in the component, simply use a dollar sign (`$`), followed by your object property name. It can be used at any parts in your HTML code, as follows: 
+```html
+    <div id="$id-post" class="post">
+
+        <!-- Post -->
+        <div id="$id-header">
+            <h1>$name</h1>
+            $day-$month-$year $hour:$min
+        </div>
+
+        <p>$desc</p>
+        
+        <div class="post-img"> <img src="$img"> </div>
+        
+        <div class="post-comment">
+            
+            <!-- Comments -->
+            <div id="$id-post" class="comment">
+
+                <div id="$id-header">
+                    <h2>$name</h2> $day-$month-$year $hour:$min
+                </div>
+                    
+                <p>$desc</p>
+                
+                <div id="post-img"> <img src="$img"> </div>
+                
+                <div class="post-sub-comment">
+                
+                    <!-- Sub Comments -->
+                    <div id="id-post" class="sub-comment">
+                        
+                        <div id="$id-header">
+                            <h3>$name</h3> $day-$month-$year $hour:$min
+                        </div>
+                            
+                        <p>$desc</p>
+                        
+                        <div id="post-img"> <img src="$img"> </div>
+                        
+                    </div>
+                    <!-- End Sub Comments -->
+
+                </div>
+
+            </div>
+             <!-- End Comments -->
+
+        <div>
+
+    </div>
+```
+---
+
+### Arrayed Component
+
+Now we're able to render our object properties in our component, but what about array? In the example data, we have 2 stacks of the array, so what to do next? Simple, just put them in an `array bracket`! Let's have a look at our data again, now I will simplify them just to do you get the point:
+```javascript
+data = {
+    //... object properties here...//
+    comment:[
+        {
+            //... object properties here...//
+            comment:[
+                {
+                    //... object properties here...//
+                },
+                {
+                    //... object properties here...//
+                }
+            ]
+        }
+    ]
+}
+```
+Now in our component, an `array bracket` has a stucture like this:
+```html
+$arrayName{
+    <Contents-Here>
+}arrayName$
+```
+When `arrayName` stands for array name you want to render them. For example, you want to render `comment` array, your `array bracket` should look like this:
+```html
+$comment{
+    <Contents-Here>
+}comment$
+```
+An `array bracket` can also be stackable. In this example, we have 2 stacks of them, to the rest of it should looke like this:
+```html
+    $comment{
+        <Contents-Here>
+        $comment{
+            <Sub-Contents-Here>
+        }comment$
+    }comment$
+```
+Now let's put `array bracket`s in! It should look like this:
+```html
+    <div id="$id-post" class="post">
+
+        <!-- Post -->
+        <div id="$id-header">
+            <h1>$name</h1>
+            $day-$month-$year $hour:$min
+        </div>
+
+        <p>$desc</p>
+        
+        <div class="post-img"> <img src="$img"> </div>
+        
+        <div class="post-comment">
+        
+        $comment{ <!-- Comments -->
+            
+            <div id="$id-post" class="comment">
+
+                <div id="$id-header">
+                    <h2>$name</h2> $day-$month-$year $hour:$min
+                </div>
+                    
+                <p>$desc</p>
+                
+                <div id="post-img"> <img src="$img"> </div>
+                
+                <div class="post-sub-comment">
+                
+                $comment{ <!-- Sub Comments -->
+                    
+                    <div id="id-post" class="sub-comment">
+                        
+                        <div id="$id-header">
+                            <h3>$name</h3> $day-$month-$year $hour:$min
+                        </div>
+                            
+                        <p>$desc</p>
+                        
+                        <div id="post-img"> <img src="$img"> </div>
+                        
+                    </div>
+                    
+                }comment$ <!-- End Sub Comments -->
+
+                </div>
+
+            </div>
+            
+        }comment$ <!-- End Comments -->
+
+        <div>
+
+    </div>
+```
