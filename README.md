@@ -44,7 +44,7 @@ $.get("navigation.html", function(data){
     $("#nav-placeholder").replaceWith(data);
 });
 ```
-But in Se.JS is 'dead simple' Just put an `attribute` in any HTML tags you wanted to show. For example, if we have web page like this:
+But in Se.JS, it is 'dead simple' Just put an `attribute` in any HTML tags you wanted to show. For example, if we have web page like this:
 ```html
 <body>
     <!--Navigation bar goes here!-->
