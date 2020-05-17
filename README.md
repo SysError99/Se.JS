@@ -38,7 +38,7 @@ And we are all set! Now we can learn more from here.
 ---
 ## Page Module
 
-When you design some of your websites, you may think about how to maintain all your pages. For example, you want to create many pages that have the same navigation bar. In simplest approach, you duplicate all of them eache pages. Which is not a good way to do. In server-side, you may write your HTML header in some parts of your server code, then render them in response. In client-side, you can also use jQuery trick to achieve this:
+When you design some of your websites, you may think about how to maintain all your pages. For example, you want to create many pages that have the same navigation bar. In simplest approach, you duplicate all of them eache pages, which is not a good way to do. In server-side, you may write your HTML header in some parts of your server code, then render them in response. In client-side, you can also use jQuery trick to achieve this:
 ```javascript
 $.get("navigation.html", function(data){
     $("#nav-placeholder").replaceWith(data);
@@ -68,7 +68,7 @@ If you want to put your navigation bar file, for now it is named `navbar.html`. 
     <div class="footer"></div>
 </body>
 ```
-Or if you also have some of cool scripts to be used, just put `se-js` along side it, or anywhere you want. But for a good code maintain. I'd prefer putting them together like this:
+Or if you also have some of cool scripts to be used, just put `se-js` along side it, or anywhere you want. But for a good code maintaining. I'd prefer putting them together like this:
 ```html
 <body>
     <!--Navigation bar goes here!-->
