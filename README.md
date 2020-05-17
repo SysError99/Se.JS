@@ -239,7 +239,7 @@ Every object in JavaScript has an ability to store their properties. If you want
                 <div class="post-sub-comment">
                 
                     <!-- Sub Comments -->
-                    <div id="id-post" class="sub-comment">
+                    <div id="$id-post" class="sub-comment">
                         
                         <div id="$id-header">
                             <h3>$name</h3> $day-$month-$year $hour:$min
@@ -337,7 +337,7 @@ Now let's put `array bracket`s in! It should look like this:
                 
                 $comment{ <!-- Sub Comments -->
                     
-                    <div id="id-post" class="sub-comment">
+                    <div id="$id-post" class="sub-comment">
                         
                         <div id="$id-header">
                             <h3>$name</h3> $day-$month-$year $hour:$min
@@ -402,7 +402,7 @@ Se.res("comp","post",`
                 
                 $comment{ <!-- Sub Comments -->
                     
-                    <div id="id-post" class="sub-comment">
+                    <div id="$id-post" class="sub-comment">
                         
                         <div id="$id-header">
                             <h3>$name</h3> $day-$month-$year $hour:$min
