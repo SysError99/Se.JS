@@ -22,19 +22,37 @@ const SeObject = {
 }
 /**
  * Add a request header for XMLHttpRequests.
- * @param {string} _seHeader Header text.
- * @param {string} _seValue Value text.
+ * @param {string} seHeader Header text.
+ * @param {string} seValue Value text.
  */
-export function addRequestHeader(_seHeader, _seValue){
+export function addRequestHeader(seHeader, seValue){
     var _seHeaderArr = []
-    _seHeaderArr["header"] = _seHeader
-    _seHeaderArr["value"] = _seValue 
+    _seHeaderArr["header"] = seHeader
+    _seHeaderArr["value"] = seValue 
     SeObject.requestHeaders.push(_seHeaderArr)
 }
 /**
  * Clear all request header for XMLHttpRequests.
  */
 export function clearRequestHeader(){SeObject.requestHeaders = []}
+/**
+ * 
+ * @param {string} seMethod Request method GET, POST
+ * @param {string} seTarget Target of request (ex: script.php)
+ * @param {function} [seFunctionSuccess] Function to be called when request is success.
+ * @param {function} [seFunctionFailed] Function to be called when request is failed.
+ */
+export function request(seMethod, seTarget, seFunction){
+    var _seXhttp = _seCreateCORSRequest(seMethod, seTarget, true)
+    if(_seXhttp!=null){
+        _seXhttp.onreadystatechange = function() {
+            if (this.readyState == 4 && this.status == 200) if(typeof seFunction === "function") seFunction(this.responseText)
+            else seFunctionFailed()
+        }
+        _seXhttp.send()
+    }
+    else throw Error(SeError.XhttpErr)
+}
 /**
  * Invoke all se-* attributes in elements.
 */
@@ -229,6 +247,7 @@ function _seCompParse(seData, seCompStr){//parse component
             for(_seDataKey in seData.$){
                 if(typeof seData.$[_seDataKey] === "object") _seSubCompResult += _seCompParse(seData.$[_seDataKey], _seSubComp)//object
                 else _seSubCompResult += _seSubComp.split("$[]").join(seData.$[_seDataKey])//non-object
+                _seSubCompResult = _seSubCompResult.split("$?").join(_seDataKey)//array number
             }
         }_seResult = _seResult.split("${"+_seSubComp+"}$").join(_seSubCompResult)
         if(_seResult.indexOf("!{")!==-1){//component (when empty)
@@ -266,15 +285,9 @@ function _seCreateCORSRequest(_seMethod, _seUrl, _seAsync){ //CORSRequest
     return _seXhr
 }
 function _seLoad(_seAttr, _seFile, _seElmnt){ //load from file
-    var _seXhttp = _seCreateCORSRequest("GET", _seFile, true)
-    if(_seXhttp!=null){
-        _seXhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) 
-                _seAdd(_seAttr, _seFile, this.responseText, _seElmnt)
-        }
-        _seXhttp.send()
-    }
-    else throw Error(SeError.XhttpErr)
+    request("GET", _seFile, function(seResponse){
+        _seAdd(_seAttr, _seFile, seResponse, _seElmnt)
+    })
 }
 function _seAdd(_seAttr, _seFile, _seRpTxt, _seElmnt){ //add
     switch(_seAttr){
