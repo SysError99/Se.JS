@@ -240,36 +240,40 @@ export function compClean(seComp){
 function _seCompParse(seData, seCompStr){//parse component
     var _seResult = seCompStr
     var _seDataKey, _seArrKey
-    for(_seDataKey in seData) {
-        var _seEmptyComp = "" //empty component
-        var _seEmptyCompFront = "!"+_seDataKey+"{"
-        var _seEmptyCompIndex = _seResult.indexOf(_seEmptyCompFront)
-        if(_seEmptyCompIndex!==-1){
-            var _seEmptyCompBack = "}"+_seDataKey+"!"
-            _seEmptyComp = _seResult.substring(_seEmptyCompIndex+_seEmptyCompFront.length, _seResult.lastIndexOf(_seEmptyCompBack))//extract
-            _seResult = _seResult.split(_seEmptyCompFront+_seEmptyComp+_seEmptyCompBack).join("")
-        }
-        if(typeof seData[_seDataKey] === "object") { //array or obj
-            var _seSubCompFront = "$"+_seDataKey+"{"
-            var _seSubCompIndex = _seResult.indexOf(_seSubCompFront)
-            if(_seSubCompIndex!==-1){
-                var _seSubCompData = "" //sub component
-                var _seSubCompBack = "}"+_seDataKey+"$"
-                var _seSubComp = _seResult.substring(_seSubCompIndex+_seSubCompFront.length, _seResult.lastIndexOf(_seSubCompBack))//extract
-                for(_seArrKey in seData[_seDataKey]){ //data in array
-                    if(typeof seData[_seDataKey][_seArrKey] === "object") _seSubCompData += _seCompParse(seData[_seDataKey][_seArrKey], _seSubComp)//object
-                    else _seSubCompData += _seSubComp.split("$[]").join(seData[_seDataKey][_seArrKey]) //non-object
-                    _seSubCompData = _seSubCompData.split("$?").join(_seArrKey) //array number
-                }if(_seSubCompData === "") _seSubCompData = _seEmptyComp//if emoty
-                _seResult = _seResult.split(_seSubCompFront+_seSubComp+_seSubCompBack).join(_seSubCompData)
+    var _seCompMode = 2
+    while(_seCompMode--){
+        for(_seDataKey in seData) {
+            var _seEmptyComp = "" //empty component
+            var _seEmptyCompFront = "!"+_seDataKey+"{"
+            var _seEmptyCompIndex = _seResult.indexOf(_seEmptyCompFront)
+            if(_seEmptyCompIndex!==-1){
+                var _seEmptyCompBack = "}"+_seDataKey+"!"
+                _seEmptyComp = _seResult.substring(_seEmptyCompIndex+_seEmptyCompFront.length, _seResult.lastIndexOf(_seEmptyCompBack))//extract
+                _seResult = _seResult.split(_seEmptyCompFront+_seEmptyComp+_seEmptyCompBack).join("")
             }
-        }else{ //others
-            if(
-                Number.isNaN(seData[_seDataKey]) ||
-                seData[_seDataKey] === null ||
-                seData[_seDataKey] === ""
-            ) _seResult = _seResult.split("$"+_seDataKey).join(_seEmptyComp) //none or invalid data
-            else _seResult = _seResult.split("$"+_seDataKey).join(seData[_seDataKey])
+            if(_seCompMode === 1 && typeof seData[_seDataKey] === "object") { //array or obj
+                var _seSubCompFront = "$"+_seDataKey+"{"
+                var _seSubCompIndex = _seResult.indexOf(_seSubCompFront)
+                if(_seSubCompIndex!==-1){
+                    var _seSubCompData = "" //sub component
+                    var _seSubCompBack = "}"+_seDataKey+"$"
+                    var _seSubComp = _seResult.substring(_seSubCompIndex+_seSubCompFront.length, _seResult.lastIndexOf(_seSubCompBack))//extract
+                    for(_seArrKey in seData[_seDataKey]){ //data in array
+                        if(typeof seData[_seDataKey][_seArrKey] === "object") _seSubCompData += _seCompParse(seData[_seDataKey][_seArrKey], _seSubComp)//object
+                        else _seSubCompData += _seSubComp.split("$[]").join(seData[_seDataKey][_seArrKey]) //non-object
+                        _seSubCompData = _seSubCompData.split("$?").join(_seArrKey) //array number
+                    }if(_seSubCompData === "") _seSubCompData = _seEmptyComp//if empty
+                    _seResult = _seResult.split(_seSubCompFront+_seSubComp+_seSubCompBack).join(_seSubCompData)
+                }
+            }else if(_seCompMode === 0){ //others
+                var _seKey = _seResult.split("$"+_seDataKey)
+                if(
+                    Number.isNaN(seData[_seDataKey]) ||
+                    seData[_seDataKey] === null ||
+                    seData[_seDataKey] === ""
+                ) _seResult = _seKey.join(_seEmptyComp) //none or invalid data
+                else _seResult = _seKey.join(seData[_seDataKey])
+            }
         }
     }
     return _seResult

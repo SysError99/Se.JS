@@ -55,7 +55,7 @@ window.x = Se.comp("table","root",{
             hate:["spider","cockroach"]
         },
         {
-            name: "",
+            name: "Kanjana",
             phone: "088-888-8888",
             like:[],
             hate:[]
