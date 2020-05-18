@@ -1,12 +1,12 @@
 /**
  * SysError.js: A portable JavaScript framework to manage any HTML-related components on the fly.
- * @author SysError_
+ * @author SysError99 (SysError_)
  * @version 0.1
  */
 /**
  * An object contains error messages in the framework
  */
-const SeError = {
+const SeMessage = {
     compNameInvalid: "Invalid name of seComp (is it a string?)",
     XhttpErr: "XMLHttpRequest failed, is it supported?"
 }
@@ -19,6 +19,7 @@ const SeObject = {
     css: document.createElement("style"), //css storage
     js: document.createElement("script"), //javascript storage
     comps:[], //components
+    conds:0 //conditional components
 }
 /**
  * Add a request header for XMLHttpRequests.
@@ -51,7 +52,7 @@ export function request(seMethod, seTarget, seFunction){
         }
         _seXhttp.send()
     }
-    else throw Error(SeError.XhttpErr)
+    else throw Error(SeMessage.XhttpErr)
 }
 /**
  * Invoke all se-* attributes in elements.
@@ -179,8 +180,7 @@ export function comp(seComp, seTarget, seData) {
         if(typeof seData === "object") _seCompObj.set(seData)//if there is data in parameters
         else if(typeof seTarget === "object" && !_seIsElement(seTarget)) _seCompObj.set(seTarget)//if parmeter "target" is data
         else if(_seCompObj.element.innerHTML === "") _seCompObj.set([])//if inner is empty (not used before, prevent setArr not working)
-    }
-    return _seCompObj
+    }return _seCompObj
 }
 /**
  * Fetch data to component.
@@ -254,23 +254,21 @@ function _seCompCompile(seCompStr){ //compile component
                 _seTxtPut = true
                 if(_seTxt === "\"" || _seTxt === "\'" || _seTxt === "\`") _seQuoteSign = _seTxt //detect quote signs
             }
-        }else{
+        }else{//exit quote
             _seTxtPut = true
             if(_seTxt === _seQuoteSign) _seQuoteSign = ""
-        }if(_seStage > 0) {
+        }if(_seStage > 0) {//putTxt
             _seBucketO += _seTxt
             if(_seTxtPut) _seBucket += _seTxt
         }else{
             _seBucketO = _seTxt
             if(_seTxtPut) _seBucket = _seTxt
-        }
-        if(_seTxtPut) switch(_seStage){
+        }if(_seTxtPut) switch(_seStage){
             case 0: //find ?
                 if(_seTxt === "?") {
                     _seStage = 1
                     if(_seStartBlock === -1) _seStartBlock = _sI - 1 //save process time
-                }
-                break
+                }break
             case 1: //find (
                 if(_seTxt === "(") { //start stack
                     _seStack = 1
@@ -278,46 +276,49 @@ function _seCompCompile(seCompStr){ //compile component
                 }else if(_seTxt !== " "){ //wrong syntax, reset
                     _seStage = 0
                     _sI--
-                }
-                break
+                }break
             case 2: //find ( and ) until complete expression
                 if(_seTxt === "(") _seStack++
                 else if(_seTxt === ")"){ _seStack--
                     if(_seStack === 0){ //end stack
                         _seStage = 3
                     }
-                }
-                break
+                }break
             case 3: //find {
                 if(_seTxt === "{") _seStage = 4
                 else if(_seTxt !== " ") { //wrong syntax, reset
                     _seStage = 0
                     _sI--
-                }
-                break
+                }break
             case 4: //find } or { when sub block
                 if(_seTxt === "}") _seStage = 5 
                 else if(_seTxt === "?" && _seCompStr[_sI+1] === "(") { //another sub block, reset
                     _seStage = 0
                     _sI--
-                }
-                break
+                }break
             case 5: //find ? (end)
                 if(_seTxt === "?"){
                     //process here
                     var _seProcessSign = _seCompCompile_process(_seBucket)
-                    console.log(_seStartBlock + " >>> "+_seBucket)
+                    console.log(_seProcessSign+"\n--END--")
                     _seCompStr = _seCompStr.split(_seBucketO).join(_seProcessSign) //replace
-                    _sI = _seStartBlock //get back
+                    _sI = _seStartBlock //find again
                     _seStage = 0 
-                }
+                }else if(_seTxt != " ") _seStage = 4 //get back
                 break
-        }
+        }   
     _sI++}
     return _seCompStr
 }
-function _seCompCompile_process(_seCompStr){
-    return ""
+function _seCompCompile_process(seCompStr){
+    var _seComp = seCompStr.substring(seCompStr.indexOf("?(")+2,seCompStr.lastIndexOf("}?")).split("){") //split script
+    var _seCompCompileScript = "_SE_JSE_EVAL.function"+SeObject.conds.toString()+"=function(){return ("+_seComp[0]+");}"
+    var _seCompCompile_process_result = "?"+(SeObject.conds).toString()+"{"+_seComp[1]+"}"+(SeObject.conds).toString()+"?"
+    SeObject.conds++
+    console.log(seCompStr)
+    console.log(_seComp)
+    console.log(_seCompCompileScript)
+    return _seCompCompile_process_result
 }
 function _seCompParse(seData, seCompStr){ //parse component
     var _seResult = seCompStr
@@ -332,8 +333,7 @@ function _seCompParse(seData, seCompStr){ //parse component
                 var _seEmptyCompBack = "}"+_seDataKey+"!"
                 _seEmptyComp = _seResult.substring(_seEmptyCompIndex+_seEmptyCompFront.length, _seResult.lastIndexOf(_seEmptyCompBack))//extract
                 _seResult = _seResult.split(_seEmptyCompFront+_seEmptyComp+_seEmptyCompBack).join("")
-            }
-            if(_seCompParseMode === 1 && typeof seData[_seDataKey] === "object") { //array or obj
+            }if(_seCompParseMode === 1 && typeof seData[_seDataKey] === "object") { //array or obj
                 var _seSubCompFront = "$"+_seDataKey+"{"
                 var _seSubCompIndex = _seResult.indexOf(_seSubCompFront)
                 if(_seSubCompIndex!==-1){
@@ -357,8 +357,7 @@ function _seCompParse(seData, seCompStr){ //parse component
                 else _seResult = _seKey.join(seData[_seDataKey])
             }
         }
-    }
-    return _seResult
+    }return _seResult
 }
 function _seInsert(str, index, value) {
     return str.substr(0, index) + value + str.substr(index);
@@ -424,14 +423,5 @@ function _se(){
     var _seDocHead  = document.getElementsByTagName('head')[0]
     _seDocHead.appendChild(SeObject.css)
     _seDocHead.appendChild(SeObject.js)
-    _seAdd("se-js",null,`
-        function seCompEvaulate(seCompEvalId){
-            var seCompEvalResult = null
-            switch(seCompEvalId){
-                /**SECOMPEVAL**/
-            }
-            return seCompEvalResult
-        }
-    `,document.body)
     invoke()
 }_se()

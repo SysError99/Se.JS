@@ -47,18 +47,21 @@ Se.res("comp","table",`
 !contact{
     <h1>No Contacts!</h1>
 }contact!
-?(x=== " Hello World! "){
+?(x=== " Hello World! " && y=== "Hello Jane" && (a+2 === b+3)){
     ?(y===4){
         ?(a===0){
-
+            <content>
+            </content>
         }?
     }?
     ?(b===6){
-        
+        <content>
+        </content>
     }?
 }?
 ? (z === 5) {
-
+    <content>
+    </content>
 }?
 `)
 window.x = Se.comp("table","root",{
