@@ -242,28 +242,45 @@ function _seCompCompile(seCompStr){ //compile component
     var _seStack = 0
     var _seStage = 0
     var _seBucket = ""
+    var _seBucketO = ""
+    var _seQuoteSign = ""
     var _seStartBlock = -1 //save process time
     var _seCompStr = seCompStr
     while(_sI < _seCompStr.length){
         var _seTxt = _seCompStr[_sI]
-        switch(_seStage){
+        var _seTxtPut = false //find quotes
+        if(_seQuoteSign === ""){
+            if(_seTxt !== " " && _seTxt !== "\t"){
+                _seTxtPut = true
+                if(_seTxt === "\"" || _seTxt === "\'" || _seTxt === "\`") _seQuoteSign = _seTxt //detect quote signs
+            }
+        }else{
+            _seTxtPut = true
+            if(_seTxt === _seQuoteSign) _seQuoteSign = ""
+        }if(_seStage > 0) {
+            _seBucketO += _seTxt
+            if(_seTxtPut) _seBucket += _seTxt
+        }else{
+            _seBucketO = _seTxt
+            if(_seTxtPut) _seBucket = _seTxt
+        }
+        if(_seTxtPut) switch(_seStage){
             case 0: //find ?
-                _seBucket = _seTxt
-                if(_seTxt === "?") _seStage = 1
+                if(_seTxt === "?") {
+                    _seStage = 1
+                    if(_seStartBlock === -1) _seStartBlock = _sI - 1 //save process time
+                }
                 break
             case 1: //find (
-                _seBucket += _seTxt
                 if(_seTxt === "(") { //start stack
                     _seStack = 1
                     _seStage = 2
-                    if(_seStartBlock === -1) _seStartBlock = _sI - 2 //save process time
                 }else if(_seTxt !== " "){ //wrong syntax, reset
                     _seStage = 0
                     _sI--
                 }
                 break
             case 2: //find ( and ) until complete expression
-                _seBucket += _seTxt
                 if(_seTxt === "(") _seStack++
                 else if(_seTxt === ")"){ _seStack--
                     if(_seStack === 0){ //end stack
@@ -272,7 +289,6 @@ function _seCompCompile(seCompStr){ //compile component
                 }
                 break
             case 3: //find {
-                _seBucket += _seTxt
                 if(_seTxt === "{") _seStage = 4
                 else if(_seTxt !== " ") { //wrong syntax, reset
                     _seStage = 0
@@ -280,7 +296,6 @@ function _seCompCompile(seCompStr){ //compile component
                 }
                 break
             case 4: //find } or { when sub block
-                _seBucket += _seTxt
                 if(_seTxt === "}") _seStage = 5 
                 else if(_seTxt === "?" && _seCompStr[_sI+1] === "(") { //another sub block, reset
                     _seStage = 0
@@ -288,11 +303,11 @@ function _seCompCompile(seCompStr){ //compile component
                 }
                 break
             case 5: //find ? (end)
-                _seBucket += _seTxt
                 if(_seTxt === "?"){
                     //process here
+                    var _seProcessSign = _seCompCompile_process(_seBucket)
                     console.log(_seStartBlock + " >>> "+_seBucket)
-                    _seCompStr = _seCompStr.split(_seBucket).join("") //replace
+                    _seCompStr = _seCompStr.split(_seBucketO).join(_seProcessSign) //replace
                     _sI = _seStartBlock //get back
                     _seStage = 0 
                 }
@@ -300,6 +315,9 @@ function _seCompCompile(seCompStr){ //compile component
         }
     _sI++}
     return _seCompStr
+}
+function _seCompCompile_process(_seCompStr){
+    return ""
 }
 function _seCompParse(seData, seCompStr){ //parse component
     var _seResult = seCompStr

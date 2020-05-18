@@ -47,7 +47,7 @@ Se.res("comp","table",`
 !contact{
     <h1>No Contacts!</h1>
 }contact!
-?(x===3){
+?(x=== " Hello World! "){
     ?(y===4){
         ?(a===0){
 
@@ -57,7 +57,7 @@ Se.res("comp","table",`
         
     }?
 }?
-?(z===5){
+? (z === 5) {
 
 }?
 `)
