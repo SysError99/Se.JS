@@ -47,21 +47,8 @@ Se.res("comp","table",`
 !contact{
     <h1>No Contacts!</h1>
 }contact!
-?(x=== " Hello World! " && y=== "Hello Jane" && (a+2 === b+3)){
-    ?(y===4){
-        ?(a===0){
-            <content>
-            </content>
-        }?
-    }?
-    ?(b===6){
-        <content>
-        </content>
-    }?
-}?
-? (z === 5) {
-    <content>
-    </content>
+?($contact[0]==="Somchai"){
+
 }?
 `)
 window.x = Se.comp("table","root",{

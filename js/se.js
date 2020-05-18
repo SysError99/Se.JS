@@ -8,7 +8,8 @@
  */
 const SeMessage = {
     compNameInvalid: "Invalid name of seComp (is it a string?)",
-    XhttpErr: "XMLHttpRequest failed, is it supported?"
+    XhttpErr: "XMLHttpRequest failed, is it supported?",
+    compCompiled:""
 }
 /**
  * An object of the framework.
@@ -248,6 +249,7 @@ function _seCompCompile(seCompStr){ //compile component
     var _seCompStr = seCompStr
     while(_sI < _seCompStr.length){
         var _seTxt = _seCompStr[_sI]
+        var _seTxtO= _seTxt
         var _seTxtPut = false //find quotes
         if(_seQuoteSign === ""){
             if(_seTxt !== " " && _seTxt !== "\t"){
@@ -257,11 +259,12 @@ function _seCompCompile(seCompStr){ //compile component
         }else{//exit quote
             _seTxtPut = true
             if(_seTxt === _seQuoteSign) _seQuoteSign = ""
-        }if(_seStage > 0) {//putTxt
-            _seBucketO += _seTxt
+        }if(_seTxt === "$" && _seQuoteSign === "") _seTxt = "data." //replace $ with data accessor
+        if(_seStage > 0) {//putTxt
+            _seBucketO += _seTxtO
             if(_seTxtPut) _seBucket += _seTxt
         }else{
-            _seBucketO = _seTxt
+            _seBucketO = _seTxtO
             if(_seTxtPut) _seBucket = _seTxt
         }if(_seTxtPut) switch(_seStage){
             case 0: //find ?
@@ -308,17 +311,21 @@ function _seCompCompile(seCompStr){ //compile component
                 break
         }   
     _sI++}
+    _seCompCompile_deploy() //deploy js engine
     return _seCompStr
 }
 function _seCompCompile_process(seCompStr){
     var _seComp = seCompStr.substring(seCompStr.indexOf("?(")+2,seCompStr.lastIndexOf("}?")).split("){") //split script
-    var _seCompCompileScript = "_SE_JSE_EVAL.function"+SeObject.conds.toString()+"=function(){return ("+_seComp[0]+");}"
-    var _seCompCompile_process_result = "?"+(SeObject.conds).toString()+"{"+_seComp[1]+"}"+(SeObject.conds).toString()+"?"
-    SeObject.conds++
+    var _seCompCompileResult = "?"+(SeObject.conds).toString()+"{"+_seComp[1]+"}"+(SeObject.conds).toString()+"?" //make a sign
+    SeMessage.compCompiled += "case "+SeObject.conds.toString()+":return ("+_seComp[0].split("$").join("data.")+");break;" //create a script
+    SeObject.conds++ //shift order
     console.log(seCompStr)
     console.log(_seComp)
-    console.log(_seCompCompileScript)
-    return _seCompCompile_process_result
+    return _seCompCompileResult
+}
+function _seCompCompile_deploy(){
+    _seAdd("se-js",null,"function _SE_JSE_EVAL(scr,data){switch(scr){default: return null;"+SeMessage.compCompiled+"}}",document.body)
+    SeMessage.compCompiled = "" //clean
 }
 function _seCompParse(seData, seCompStr){ //parse component
     var _seResult = seCompStr
@@ -421,6 +428,8 @@ function _seIsElement(_seObj){
 function _se(){
     //Append to header
     var _seDocHead  = document.getElementsByTagName('head')[0]
+    SeObject.css.id = "se-css"
+    SeObject.js.id = "se-js"
     _seDocHead.appendChild(SeObject.css)
     _seDocHead.appendChild(SeObject.js)
     invoke()
