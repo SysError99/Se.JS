@@ -1,7 +1,9 @@
 import * as Se from "./js/se.js"
+
 window.like = function(name){
     alert("You've Liked "+name)
 }
+
 Se.res("comp","table",`
 <h1>Contacts</h1>
 <table>
@@ -45,6 +47,19 @@ Se.res("comp","table",`
 !contact{
     <h1>No Contacts!</h1>
 }contact!
+?(x===3){
+    ?(y===4){
+        ?(a===0){
+
+        }?
+    }?
+    ?(b===6){
+        
+    }?
+}?
+?(z===5){
+
+}?
 `)
 window.x = Se.comp("table","root",{
     contact:[

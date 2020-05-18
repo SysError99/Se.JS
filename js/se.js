@@ -237,11 +237,75 @@ export function compClean(seComp){
     },2)
     _seIntervalTimeout(seCompWaiter)
 }
-function _seCompParse(seData, seCompStr){//parse component
+function _seCompCompile(seCompStr){ //compile component
+    var _sI = 0
+    var _seStack = 0
+    var _seStage = 0
+    var _seBucket = ""
+    var _seStartBlock = -1 //save process time
+    var _seCompStr = seCompStr
+    while(_sI < _seCompStr.length){
+        var _seTxt = _seCompStr[_sI]
+        switch(_seStage){
+            case 0: //find ?
+                _seBucket = _seTxt
+                if(_seTxt === "?") _seStage = 1
+                break
+            case 1: //find (
+                _seBucket += _seTxt
+                if(_seTxt === "(") { //start stack
+                    _seStack = 1
+                    _seStage = 2
+                    if(_seStartBlock === -1) _seStartBlock = _sI - 2 //save process time
+                }else if(_seTxt !== " "){ //wrong syntax, reset
+                    _seStage = 0
+                    _sI--
+                }
+                break
+            case 2: //find ( and ) until complete expression
+                _seBucket += _seTxt
+                if(_seTxt === "(") _seStack++
+                else if(_seTxt === ")"){ _seStack--
+                    if(_seStack === 0){ //end stack
+                        _seStage = 3
+                    }
+                }
+                break
+            case 3: //find {
+                _seBucket += _seTxt
+                if(_seTxt === "{") _seStage = 4
+                else if(_seTxt !== " ") { //wrong syntax, reset
+                    _seStage = 0
+                    _sI--
+                }
+                break
+            case 4: //find } or { when sub block
+                _seBucket += _seTxt
+                if(_seTxt === "}") _seStage = 5 
+                else if(_seTxt === "?" && _seCompStr[_sI+1] === "(") { //another sub block, reset
+                    _seStage = 0
+                    _sI--
+                }
+                break
+            case 5: //find ? (end)
+                _seBucket += _seTxt
+                if(_seTxt === "?"){
+                    //process here
+                    console.log(_seStartBlock + " >>> "+_seBucket)
+                    _seCompStr = _seCompStr.split(_seBucket).join("") //replace
+                    _sI = _seStartBlock //get back
+                    _seStage = 0 
+                }
+                break
+        }
+    _sI++}
+    return _seCompStr
+}
+function _seCompParse(seData, seCompStr){ //parse component
     var _seResult = seCompStr
     var _seDataKey, _seArrKey
-    var _seCompMode = 2
-    while(_seCompMode--){
+    var _seCompParseMode = 2
+    while(_seCompParseMode--){
         for(_seDataKey in seData) {
             var _seEmptyComp = "" //empty component
             var _seEmptyCompFront = "!"+_seDataKey+"{"
@@ -251,7 +315,7 @@ function _seCompParse(seData, seCompStr){//parse component
                 _seEmptyComp = _seResult.substring(_seEmptyCompIndex+_seEmptyCompFront.length, _seResult.lastIndexOf(_seEmptyCompBack))//extract
                 _seResult = _seResult.split(_seEmptyCompFront+_seEmptyComp+_seEmptyCompBack).join("")
             }
-            if(_seCompMode === 1 && typeof seData[_seDataKey] === "object") { //array or obj
+            if(_seCompParseMode === 1 && typeof seData[_seDataKey] === "object") { //array or obj
                 var _seSubCompFront = "$"+_seDataKey+"{"
                 var _seSubCompIndex = _seResult.indexOf(_seSubCompFront)
                 if(_seSubCompIndex!==-1){
@@ -265,7 +329,7 @@ function _seCompParse(seData, seCompStr){//parse component
                     }if(_seSubCompData === "") _seSubCompData = _seEmptyComp//if empty
                     _seResult = _seResult.split(_seSubCompFront+_seSubComp+_seSubCompBack).join(_seSubCompData)
                 }
-            }else if(_seCompMode === 0){ //others
+            }else if(_seCompParseMode === 0){ //others
                 var _seKey = _seResult.split("$"+_seDataKey)
                 if(
                     Number.isNaN(seData[_seDataKey]) ||
@@ -277,6 +341,9 @@ function _seCompParse(seData, seCompStr){//parse component
         }
     }
     return _seResult
+}
+function _seInsert(str, index, value) {
+    return str.substr(0, index) + value + str.substr(index);
 }
 function _seIntervalTimeout(_seInterval){//kill interval if out of time
     setTimeout(function(){
@@ -323,7 +390,7 @@ function _seAdd(_seAttr, _seFile, _seRpTxt, _seElmnt){ //add
             break
         //Component
         case "se-comp":
-            SeObject.comps[_seFile.split(".html").join("")] = _seRpTxt
+            SeObject.comps[_seFile.split(".html").join("")] = _seCompCompile(_seRpTxt) //compile component
             break
     }
     if(_seElmnt.getAttribute(_seAttr) !== null) _seElmnt.removeAttribute(_seAttr) //clean loaded attribute
@@ -339,5 +406,14 @@ function _se(){
     var _seDocHead  = document.getElementsByTagName('head')[0]
     _seDocHead.appendChild(SeObject.css)
     _seDocHead.appendChild(SeObject.js)
+    _seAdd("se-js",null,`
+        function seCompEvaulate(seCompEvalId){
+            var seCompEvalResult = null
+            switch(seCompEvalId){
+                /**SECOMPEVAL**/
+            }
+            return seCompEvalResult
+        }
+    `,document.body)
     invoke()
 }_se()
