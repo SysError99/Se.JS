@@ -401,9 +401,6 @@ function _seCompParse(seData, seCompStr){ //parse component
         }
     }return _seResult
 }
-function _seInsert(str, index, value) {
-    return str.substr(0, index) + value + str.substr(index);
-}
 function _seIntervalTimeout(_seInterval){//kill interval if out of time
     setTimeout(function(){
         if(typeof _seInterval === "object"){
@@ -468,14 +465,5 @@ function _se(){
     SeObject.js.id = "se-js"
     _seDocHead.appendChild(SeObject.css)
     _seDocHead.appendChild(SeObject.js)
-    _seAdd("se-js",null,`
-        function seCompEvaulate(seCompEvalId){
-            var seCompEvalResult = null
-            switch(seCompEvalId){
-                /**SECOMPEVAL**/
-            }
-            return seCompEvalResult
-        }
-    `,document.body)
     invoke()
 }_se()
