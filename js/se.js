@@ -11,7 +11,7 @@ const SeMessage = {
     compCompileErr0_0: "Unusual characters betweetn \"?\" and \"(\" or between \")\" and \"{\" of the component \"",
     compCompileErr0_1: "\"!",
     compCompiledWarn: "All component expressions loaded before are statically compiled, all contidional components loaded after this will not work!",
-    jsImportWarn: "Any scripts imported by resFile() will not work, due to to security concerns.\n Implement your scripts in your webpage.js instead.",
+    jsImportWarn: "Any scripts imported by resFile() will not work, due to to security concerns.\n Implement your scripts in your webpage.html or webpage.js instead.",
     XhttpErr: "XMLHttpRequest failed, is it supported?",
     compCompiled:""
 }
@@ -301,7 +301,7 @@ function _seCompCompile(seCompStr, seCompName){ //compile component
                 if(_seTxt === "(") { //start stack
                     _seStack = 1
                     _seStage = 2
-                }else if(isNaN(_seTxt)) throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
+                }else if(Number.isNaN(_seTxt)) throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
                 else{//ignore compiled
                     _seStage = 0
                     _sI--
@@ -426,7 +426,8 @@ function _seCreateCORSRequest(_seMethod, _seUrl, _seAsync){ //CORSRequest
     return _seXhr
 }
 function _seLoad(_seAttr, _seFile, _seElmnt){ //load from file
-    request("GET", _seFile, function(seResponse){
+    if(_seAttr === "se-js") console.warn(SeMessage.jsImportWarn)
+    else request("GET", _seFile, function(seResponse){
         _seAdd(_seAttr, _seFile, seResponse, _seElmnt)
     })
 }
