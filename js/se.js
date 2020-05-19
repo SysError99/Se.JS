@@ -349,7 +349,7 @@ function _seCompParse(seData, seCompStr){ //parse component
     var _seResult = seCompStr
     var _seDataKey, _seArrKey
     var _seCompParseMode = 2
-    var _seCondFound = true //conditional statement
+    var _seCondFound = true //conditional component
     var _seCond = 0
     while(_seCondFound){
         var _seCondStart = "?"+_seCond+"{"
