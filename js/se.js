@@ -242,30 +242,48 @@ export function compClean(seComp){
     },2)
     _seIntervalTimeout(seCompWaiter)
 }
+function _seRemoveTab(seStr){
+    var _seTextSplit = seStr.split("\n")
+    var _sRI, _sRII, _sRT, _seNotTab
+    for(_sRI in _seTextSplit){
+        _sRII = 0
+        _seNotTab = false
+        while(_seNotTab === false && _sRII < _seTextSplit[_sRI].length){
+            _sRT = _seTextSplit[_sRI][_sRII]
+            if(_sRT === " ") _sRII++
+            else _seNotTab = true
+        }
+        _seTextSplit[_sRI] = _seTextSplit[_sRI].substring(_sRII,_seTextSplit[_sRI].length)
+    }
+    return _seTextSplit.join("\n")
+}
+function _seRemoveSpace(seStr){
+    var _sRI = 0
+    var _seTxt = ""
+    var _seRemoved = ""
+    var _seQuoteSign = ""
+    while(_sRI < seStr.length){ //remove spaces
+        _seTxt = seStr[_sRI]
+        if(_seQuoteSign === ""){
+            if(_seTxt !== " " && _seTxt !== "\t"){
+                _seRemoved += _seTxt
+                if(_seTxt === "\"" || _seTxt === "\'" || _seTxt === "\`") _seQuoteSign = _seTxt //detect quote signs
+            }
+        }else{
+            _seRemoved += _seTxt
+            if(_seTxt === _seQuoteSign) _seQuoteSign = ""
+        }
+    _sRI++}
+    return _seRemoved
+}
 function _seCompCompile(seCompStr, seCompName){ //compile component
     var _sI = 0
     var _seStack = 0
     var _seStage = 0
     var _seBucket = ""
-    var _seQuoteSign = ""
     var _seStartBlock = -1 //save process time
-    var _seCompStr = seCompStr
-    while(_sI < _seCompStr.length){ //remove spaces
-        var _seTxt = _seCompStr[_sI]
-        if(_seQuoteSign === ""){
-            if(_seTxt !== " " && _seTxt !== "\t"){
-                _seBucket += _seTxt
-                if(_seTxt === "\"" || _seTxt === "\'" || _seTxt === "\`") _seQuoteSign = _seTxt //detect quote signs
-            }
-        }
-        else{
-            _seBucket += _seTxt
-            if(_seTxt === _seQuoteSign) _seQuoteSign = ""
-        }
-    _sI++}
-    _seCompStr = _seBucket //throw in main
-    _seBucket = "" //cleanup
-    _sI=0 //reset
+    var _seCompStr = _seRemoveTab(seCompStr)
+    console.log(_seCompStr)
     while(_sI < _seCompStr.length){ //compile
         var _seTxt = _seCompStr[_sI]
         if(_seStage > 0) {//putTxt
@@ -286,8 +304,7 @@ function _seCompCompile(seCompStr, seCompName){ //compile component
                 else{//ignore compiled
                     _seStage = 0
                     _sI--
-                }
-                break
+                }break
             case 2: //find ( and ) until complete expression
                 if(_seTxt === "(") _seStack++
                 else if(_seTxt === ")"){ _seStack--
@@ -321,12 +338,12 @@ function _seCompCompile(seCompStr, seCompName){ //compile component
 function _seCompCompile_process(seCompStr){
     var _seComp = seCompStr.substring(seCompStr.indexOf("?(")+2,seCompStr.lastIndexOf("}?")).split("){") //split script
     var _seCompCompileResult = "?"+(SeObject.conds).toString()+"{"+_seComp[1]+"}"+(SeObject.conds).toString()+"?" //make a sign
-    SeMessage.compCompiled += "case "+SeObject.conds.toString()+":return ("+_seComp[0].split("$").join("data.")+");break;" //create a script
+    SeMessage.compCompiled += "case "+SeObject.conds.toString()+":return ("+_seRemoveSpace(_seComp[0]).split("$").join("data.")+");break;" //create a script
     SeObject.conds++ //shift order
     return _seCompCompileResult
 }
 function _seCompParse(seData, seCompStr){ //parse component
-    if(SeMessage.compCompiled != ""){//if never deploy js engine before
+    if(SeMessage.compCompiled !== "" && SeMessage.compCompiled !== "!"){//if never deploy js engine before
         _seAdd("se-js",null,"function _SE_JSE_EVAL(scr,data){switch(scr){default: return null;"+SeMessage.compCompiled+"}}",document.body) //deploy
         SeMessage.compCompiled = "!" //clean
     }

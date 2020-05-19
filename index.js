@@ -47,8 +47,8 @@ Se.res("comp","table",`
 !contact{
     <h1>No Contacts!</h1>
 }contact!
-?($contact[0]==="Somchai"){
-    ?($contact[0]==="Kanjana"){
+?($contact[0] === "Somchai"){
+    ?($contact[0] === "Kanjana"){
         
     }?
 }?
