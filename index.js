@@ -47,13 +47,16 @@ Se.res("comp","table",`
 !contact{
     <h1>No Contacts!</h1>
 }contact!
-?($contact[0] === "Somchai"){
-    ?($contact[0] === "Kanjana"){
-        
-    }?
+
+?($x===3){
+    <h> Hello There! </h>
+}?
+?($x===4){
+    <h> I Hidden! </h>
 }?
 `)
 window.x = Se.comp("table","root",{
+    x: 3,
     contact:[
         {
             name: "Somchai",
