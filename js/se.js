@@ -11,6 +11,7 @@ const SeMessage = {
     compCompileErr0_0: "Unusual characters betweetn \"?\" and \"(\" or between \")\" and \"{\" of the component \"",
     compCompileErr0_1: "\"!",
     compCompiledWarn: "All component expressions loaded before are statically compiled, all contidional components loaded after this will not work!",
+    jsImportWarn: "Any scripts imported by resFile() will not work, due to to security concerns.\n Implement your scripts in your webpage.js instead.",
     XhttpErr: "XMLHttpRequest failed, is it supported?",
     compCompiled:""
 }
@@ -103,7 +104,8 @@ export function resFile(seType, seFile, seElement) {
     if(typeof seElement === "string") seElmnt = document.getElementById(seElement)
     else if(typeof seElement === "object") seElmnt = seElement
     else seElmnt = document.body
-    _seLoad("se-"+seType, seFile, seElmnt) //load file
+    if(seType==="js") console.warn(SeMessage.jsImportWarn)
+    else _seLoad("se-"+seType, seFile, seElmnt) //load file
 }
 /** 
  * Unload resources
