@@ -283,7 +283,6 @@ function _seCompCompile(seCompStr, seCompName){ //compile component
     var _seBucket = ""
     var _seStartBlock = -1 //save process time
     var _seCompStr = _seRemoveTab(seCompStr)
-    console.log(_seCompStr)
     while(_sI < _seCompStr.length){ //compile
         var _seTxt = _seCompStr[_sI]
         if(_seStage > 0) {//putTxt
@@ -383,6 +382,17 @@ function _seCompParse(seData, seCompStr){ //parse component
                 else _seResult = _seKey.join(seData[_seDataKey])
             }
         }
+    }var _seCondFound = true //conditioned statement
+    var _seCond = 0
+    while(_seCondFound){
+        var _seCondStart = "?"+_seCond+"{"
+        var _seCondStartIndex =  _seResult.indexOf(_seCondStart)
+        if(_seCondStartIndex !== -1){//exists
+            var _seCondEnd = "}"+_seCond+"?"
+            var _seCondComp = _seResult.substring(_seCondStart+_seCondStart.length, _seResult.lastIndexOf(_seCondEnd))
+            if(window._SE_JSE_EVAL(_seCond,seData)===true) _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join(_seCondComp) //true
+            else _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join("") //false
+        _seCond++}else _seCondFound = false
     }return _seResult
 }
 function _seInsert(str, index, value) {
