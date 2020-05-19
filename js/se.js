@@ -8,6 +8,8 @@
  */
 const SeMessage = {
     compNameInvalid: "Invalid name of seComp (is it a string?)",
+    compCompileErr0_0: "Unusual characters betweetn \"?\" and \"(\" or between \")\" and \"{\" of the component \"",
+    compCompileErr0_1: "\"!",
     XhttpErr: "XMLHttpRequest failed, is it supported?",
     compCompiled:""
 }
@@ -238,35 +240,37 @@ export function compClean(seComp){
     },2)
     _seIntervalTimeout(seCompWaiter)
 }
-function _seCompCompile(seCompStr){ //compile component
+function _seCompCompile(seCompStr, seCompName){ //compile component
     var _sI = 0
     var _seStack = 0
     var _seStage = 0
     var _seBucket = ""
-    var _seBucketO = ""
     var _seQuoteSign = ""
     var _seStartBlock = -1 //save process time
     var _seCompStr = seCompStr
-    while(_sI < _seCompStr.length){
+    while(_sI < _seCompStr.length){ //remove spaces
         var _seTxt = _seCompStr[_sI]
-        var _seTxtO= _seTxt
-        var _seTxtPut = false //find quotes
         if(_seQuoteSign === ""){
             if(_seTxt !== " " && _seTxt !== "\t"){
-                _seTxtPut = true
+                _seBucket += _seTxt
                 if(_seTxt === "\"" || _seTxt === "\'" || _seTxt === "\`") _seQuoteSign = _seTxt //detect quote signs
             }
-        }else{//exit quote
-            _seTxtPut = true
+        }
+        else{
+            _seBucket += _seTxt
             if(_seTxt === _seQuoteSign) _seQuoteSign = ""
-        }if(_seTxt === "$" && _seQuoteSign === "") _seTxt = "data." //replace $ with data accessor
+        }
+    _sI++}
+    _seCompStr = _seBucket //throw in main
+    _seBucket = "" //cleanup
+    _sI=0 //reset
+    while(_sI < _seCompStr.length){ //compile
+        var _seTxt = _seCompStr[_sI]
         if(_seStage > 0) {//putTxt
-            _seBucketO += _seTxtO
-            if(_seTxtPut) _seBucket += _seTxt
+            _seBucket += _seTxt
         }else{
-            _seBucketO = _seTxtO
-            if(_seTxtPut) _seBucket = _seTxt
-        }if(_seTxtPut) switch(_seStage){
+            _seBucket = _seTxt
+        }switch(_seStage){
             case 0: //find ?
                 if(_seTxt === "?") {
                     _seStage = 1
@@ -276,10 +280,12 @@ function _seCompCompile(seCompStr){ //compile component
                 if(_seTxt === "(") { //start stack
                     _seStack = 1
                     _seStage = 2
-                }else if(_seTxt !== " "){ //wrong syntax, reset
+                }else if(isNaN(_seTxt)) throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
+                else{//ignore compiled
                     _seStage = 0
                     _sI--
-                }break
+                }
+                break
             case 2: //find ( and ) until complete expression
                 if(_seTxt === "(") _seStack++
                 else if(_seTxt === ")"){ _seStack--
@@ -289,10 +295,8 @@ function _seCompCompile(seCompStr){ //compile component
                 }break
             case 3: //find {
                 if(_seTxt === "{") _seStage = 4
-                else if(_seTxt !== " ") { //wrong syntax, reset
-                    _seStage = 0
-                    _sI--
-                }break
+                else throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
+                break
             case 4: //find } or { when sub block
                 if(_seTxt === "}") _seStage = 5 
                 else if(_seTxt === "?" && _seCompStr[_sI+1] === "(") { //another sub block, reset
@@ -303,15 +307,13 @@ function _seCompCompile(seCompStr){ //compile component
                 if(_seTxt === "?"){
                     //process here
                     var _seProcessSign = _seCompCompile_process(_seBucket)
-                    console.log(_seProcessSign+"\n--END--")
-                    _seCompStr = _seCompStr.split(_seBucketO).join(_seProcessSign) //replace
+                    _seCompStr = _seCompStr.split(_seBucket).join(_seProcessSign) //replace
                     _sI = _seStartBlock //find again
                     _seStage = 0 
                 }else if(_seTxt != " ") _seStage = 4 //get back
                 break
         }   
     _sI++}
-    _seCompCompile_deploy() //deploy js engine
     return _seCompStr
 }
 function _seCompCompile_process(seCompStr){
@@ -319,15 +321,16 @@ function _seCompCompile_process(seCompStr){
     var _seCompCompileResult = "?"+(SeObject.conds).toString()+"{"+_seComp[1]+"}"+(SeObject.conds).toString()+"?" //make a sign
     SeMessage.compCompiled += "case "+SeObject.conds.toString()+":return ("+_seComp[0].split("$").join("data.")+");break;" //create a script
     SeObject.conds++ //shift order
-    console.log(seCompStr)
-    console.log(_seComp)
     return _seCompCompileResult
 }
 function _seCompCompile_deploy(){
     _seAdd("se-js",null,"function _SE_JSE_EVAL(scr,data){switch(scr){default: return null;"+SeMessage.compCompiled+"}}",document.body)
-    SeMessage.compCompiled = "" //clean
 }
 function _seCompParse(seData, seCompStr){ //parse component
+    if(SeMessage.compCompiled != ""){//if never deploy js engine before
+        _seCompCompile_deploy() //deploy
+        SeMessage.compCompiled = "" //clean
+    }
     var _seResult = seCompStr
     var _seDataKey, _seArrKey
     var _seCompParseMode = 2
@@ -414,7 +417,7 @@ function _seAdd(_seAttr, _seFile, _seRpTxt, _seElmnt){ //add
             break
         //Component
         case "se-comp":
-            SeObject.comps[_seFile.split(".html").join("")] = _seCompCompile(_seRpTxt) //compile component
+            SeObject.comps[_seFile.split(".html").join("")] = _seCompCompile(_seRpTxt, _seFile) //compile component
             break
     }
     if(_seElmnt.getAttribute(_seAttr) !== null) _seElmnt.removeAttribute(_seAttr) //clean loaded attribute
