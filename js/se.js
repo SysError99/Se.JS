@@ -349,7 +349,22 @@ function _seCompParse(seData, seCompStr){ //parse component
     var _seResult = seCompStr
     var _seDataKey, _seArrKey
     var _seCompParseMode = 2
-    while(_seCompParseMode--){
+    var _seCondFound = true //conditional statement
+    var _seCond = 0
+    while(_seCondFound){
+        var _seCondStart = "?"+_seCond+"{"
+        var _seCondStartIndex =  _seResult.indexOf(_seCondStart)
+        if(_seCondStartIndex !== -1){//exists
+            var _seCondEnd = "}"+_seCond+"?"
+            var _seCondComp = _seResult.substring(_seCondStartIndex+_seCondStart.length, _seResult.indexOf(_seCondEnd))
+            if(window._SE_JSE_EVAL(_seCond,seData)===true) {
+                _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join(_seCondComp) //true
+            }
+            else {
+                _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join("") //false
+            }
+        _seCond++}else _seCondFound = false
+    }while(_seCompParseMode--){ //array component
         for(_seDataKey in seData) {
             var _seEmptyComp = "" //empty component
             var _seEmptyCompFront = "!"+_seDataKey+"{"
@@ -382,21 +397,6 @@ function _seCompParse(seData, seCompStr){ //parse component
                 else _seResult = _seKey.join(seData[_seDataKey])
             }
         }
-    }var _seCondFound = true //conditioned statement
-    var _seCond = 0
-    while(_seCondFound){
-        var _seCondStart = "?"+_seCond+"{"
-        var _seCondStartIndex =  _seResult.indexOf(_seCondStart)
-        if(_seCondStartIndex !== -1){//exists
-            var _seCondEnd = "}"+_seCond+"?"
-            var _seCondComp = _seResult.substring(_seCondStartIndex+_seCondStart.length, _seResult.indexOf(_seCondEnd))
-            if(window._SE_JSE_EVAL(_seCond,seData)===true) {
-                _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join(_seCondComp) //true
-            }
-            else {
-                _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join("") //false
-            }
-        _seCond++}else _seCondFound = false
     }return _seResult
 }
 function _seIntervalTimeout(_seInterval){//kill interval if out of time
