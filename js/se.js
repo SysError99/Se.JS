@@ -10,6 +10,7 @@ const SeMessage = {
     compNameInvalid: "Invalid name of seComp (is it a string?)",
     compCompileErr0_0: "Unusual characters betweetn \"?\" and \"(\" or between \")\" and \"{\" of the component \"",
     compCompileErr0_1: "\"!",
+    compCompiledWarn: "All component expressions loaded before are statically compiled, all contidional components loaded after this will not work!",
     XhttpErr: "XMLHttpRequest failed, is it supported?",
     compCompiled:""
 }
@@ -79,6 +80,7 @@ export function invoke() {
  * @param {string|object} seElement Element type to append (Optional)
 */
 export function res(seType, seName, seStr, seElement) {
+    if(SeMessage.compCompiled === "!") console.warn(SeMessage.compCompiledWarn) //if compiled
     var seElmnt = null
     var seCheckedName
     //check against element
@@ -323,13 +325,10 @@ function _seCompCompile_process(seCompStr){
     SeObject.conds++ //shift order
     return _seCompCompileResult
 }
-function _seCompCompile_deploy(){
-    _seAdd("se-js",null,"function _SE_JSE_EVAL(scr,data){switch(scr){default: return null;"+SeMessage.compCompiled+"}}",document.body)
-}
 function _seCompParse(seData, seCompStr){ //parse component
     if(SeMessage.compCompiled != ""){//if never deploy js engine before
-        _seCompCompile_deploy() //deploy
-        SeMessage.compCompiled = "" //clean
+        _seAdd("se-js",null,"function _SE_JSE_EVAL(scr,data){switch(scr){default: return null;"+SeMessage.compCompiled+"}}",document.body) //deploy
+        SeMessage.compCompiled = "!" //clean
     }
     var _seResult = seCompStr
     var _seDataKey, _seArrKey
