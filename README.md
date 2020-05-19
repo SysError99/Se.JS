@@ -68,21 +68,6 @@ If you want to put your navigation bar file, for now it is named `navbar.html`. 
     <div class="footer"></div>
 </body>
 ```
-Or if you also have some of cool scripts to be used, just put `se-js` along side it, or anywhere you want. But for a good code maintaining. I'd prefer putting them together like this:
-```html
-<body>
-    <!--Navigation bar goes here!-->
-    <div class="navbar" se-html="navbar.html" se-js="navbar.js"></div>
-    <!--Content goes here!-->
-    <div class="content">
-        Some of cool content goes here!
-    </div>
-    <!--Footer goes here-->
-    <div class="footer"></div>
-</body>
-```
-And that's it! Now you have a reusable module!
-
 For other components, like CSS file, you can also put `se-css` attribute somewhere in your HTML page, maybe `<body>` or `<head>` tag, like `<head se-css="awesome.css">`.
 In the complete web page, it should look like this:
 ```html
@@ -95,7 +80,7 @@ In the complete web page, it should look like this:
 </head>
 <body>
     <!--Navigation bar goes here!-->
-    <div class="navbar" se-html="navbar.html" se-js="navbar.js"></div>
+    <div class="navbar" se-html="navbar.html"></div>
     <!--Content goes here!-->
     <div class="content">
         Some of cool content goes here!
@@ -106,6 +91,8 @@ In the complete web page, it should look like this:
 </html>
 ```
 Vala, we have done with the Page Module!
+
+> Note: Due to security concerns, if you want to import JavaScript for your page module, you have to define them in your index.js (or other name as you desire) instead via `window` object like `window.toggle = function {/** toggle navbar**/}`
 
 ---
 ## Component
