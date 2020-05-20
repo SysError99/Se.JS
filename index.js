@@ -1,4 +1,5 @@
 import * as Se from "./js/se.js"
+import * as Navbar from "./navbar.js"
 
 window.like = function(name){
     alert("You've Liked "+name)
