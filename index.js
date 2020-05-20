@@ -51,15 +51,15 @@ Se.res("comp","table",`
 
 ?if($x===3){
     <h> Hello There! </h>
-    ?if($x===4){
+    ?if($y===4){
         <h> Cond0! </h>
     }?
-    ?elif($x===5){
+    ?elif($y===5){
         <h> Cond1! </h>
     }?
     ?else{
         <h> Cond2! </h>
-        ?if($x===7){
+        ?if($z===6){
             <h> SubCond0! </h>
         }?
         ?else{
@@ -71,8 +71,11 @@ Se.res("comp","table",`
     <h> Good Bye! </h>
 }?
 `)
-window.x = Se.comp("table","root",{
-    x: 3,
+let data = {
+    x: 4,
+    y: 4,
+    z: 6,
+    time: 0,
     contact:[
         {
             name: "Somchai",
@@ -87,4 +90,5 @@ window.x = Se.comp("table","root",{
             hate:[]
         }
     ]
-})
+}
+window.x = Se.comp("table","root",data)

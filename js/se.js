@@ -345,11 +345,11 @@ function _seCompCompile_process(seCompStr,seStackBlock){
         _seComp = _seComp.join("){") //return back
     var _seStackBlockId = SeObject.conds[seStackBlock].length //get stack block id
     var _seCond = "" //detect conditions
-    if(_seExpression.indexOf("if#") !== -1) _seCond = "if"
-    else if(_seExpression.indexOf("elif#") !== -1) _seCond = "elif"
+    if(_seExpression.indexOf("elif#") !== -1) _seCond = "elif"
     else if(_seExpression.indexOf("else#") !== -1) _seCond = "else"
+    else if(_seExpression.indexOf("if#") !== -1) _seCond = "if"
     if(_seCond != "") {
-        SeObject.conds[seStackBlock][_seStackBlockId] = "if" //add to stack
+        SeObject.conds[seStackBlock][_seStackBlockId] = _seCond //add to stack
         _seExpression = _seExpression.split(_seCond+"#").join("") //remove from expression for js engine
         if(_seCond !== "else")SeMessage.compCompiled += "case \""+seStackBlock.toString()+"."+_seStackBlockId.toString()+"\":return ("+_seRemoveSpace(_seExpression).split("$").join("data.")+");break;" //create a script, when not "else"
     }else throw Error("Condition Error of condition \""+_seExpression+"\"")
@@ -362,22 +362,27 @@ function _seCompParse(seData, seCompStr){ //parse component
     }var _seResult = seCompStr
     var _seDataKey, _seArrKey
     var _seCompParseMode = 2
-    /*var _seCondFound = true //conditional component
-    var _seCond = 0
-    while(_seCondFound){
-        var _seCondStart = "?<"+_seCond+"{"
-        var _seCondStartIndex =  _seResult.indexOf(_seCondStart)
-        if(_seCondStartIndex !== -1){//exists
-            var _seCondEnd = "}"+_seCond+">?"
-            var _seCondComp = _seResult.substring(_seCondStartIndex+_seCondStart.length, _seResult.indexOf(_seCondEnd))
-            if(window._SE_JSE_EVAL(_seCond,seData)===true) {
-                _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join(_seCondComp) //true
+    //conditional component
+    var _seCond, _seCondTest, _seStack, _seStackBlock, _seStackIf, _seCondStart, _seCondStartIndex, _seCondEnd, _seCondComp
+    for(_seStack in SeObject.conds){
+        _seStackIf = true
+        for(_seStackBlock in SeObject.conds[_seStack]){
+            _seCond = _seStack+"."+_seStackBlock
+            _seCondStart = "?<"+_seCond+"{"
+            _seCondStartIndex =  _seResult.indexOf(_seCondStart)
+            if(_seCondStartIndex !== -1){ //exists
+                _seCondEnd = "}"+_seCond+">?"
+                _seCondComp = _seResult.substring(_seCondStartIndex+_seCondStart.length, _seResult.indexOf(_seCondEnd))//inside cond
+                if(SeObject.conds[_seStack][_seStackBlock] === "if") _seStackIf = true //if "if", reset
+                if(SeObject.conds[_seStack][_seStackBlock] === "else") _seCondTest = true //else cond
+                else _seCondTest = window._SE_JSE_EVAL(_seCond,seData) //other cond, test
+                if(_seCondTest && _seStackIf){ //true
+                    _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join(_seCondComp)
+                    _seStackIf = false
+                }else _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join("") //false
             }
-            else {
-                _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join("") //false
-            }
-        _seCond++}else _seCondFound = false
-    }*/while(_seCompParseMode--){ //array component
+        }
+    }while(_seCompParseMode--){ //array component
         for(_seDataKey in seData) {
             var _seEmptyComp = "" //empty component
             var _seEmptyCompFront = "!"+_seDataKey+"{"
