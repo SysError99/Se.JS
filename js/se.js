@@ -24,7 +24,7 @@ const SeObject = {
     css: document.createElement("style"), //css storage
     js: document.createElement("script"), //javascript storage
     comps:[], //components
-    conds:0 //conditional components
+    conds:[], //conditional components (by block stack)
 }
 /**
  * Add a request header for XMLHttpRequests.
@@ -283,10 +283,12 @@ function _seCompCompile(seCompStr, seCompName){ //compile component
     var _seStack = 0
     var _seStage = 0
     var _seBucket = ""
+    var _seStackBlock = 0;
     var _seStartBlock = -1 //save process time
-    var _seCompStr = _seRemoveTab(seCompStr)
+    var _seCompStr = _seRemoveTab(seCompStr).split("?if(").join("?(if#").split("?elif(").join("?(elif#").split("?else{").join("?(else#){")
     while(_sI < _seCompStr.length){ //compile
         var _seTxt = _seCompStr[_sI]
+        var _seTxts= _seCompStr[_sI+1]
         if(_seStage > 0) {//putTxt
             _seBucket += _seTxt
         }else{
@@ -301,63 +303,72 @@ function _seCompCompile(seCompStr, seCompName){ //compile component
                 if(_seTxt === "(") { //start stack
                     _seStack = 1
                     _seStage = 2
-                }else if(Number.isNaN(_seTxt)) throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
-                else{//ignore compiled
+                }else{ //ignore compiled
                     _seStage = 0
                     _sI--
                 }break
             case 2: //find ( and ) until complete expression
                 if(_seTxt === "(") _seStack++
-                else if(_seTxt === ")"){ _seStack--
-                    if(_seStack === 0){ //end stack
-                        _seStage = 3
-                    }
+                else if(_seTxt === ")"){
+                    _seStack--
+                    if(_seStack === 0) _seStage = 3//end stack
                 }break
             case 3: //find {
-                if(_seTxt === "{") _seStage = 4
-                else throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
+                if(_seTxt === "{") {
+                    _seStack = 1
+                    _seStage = 4
+                }else throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
                 break
-            case 4: //find } or { when sub block
-                if(_seTxt === "}") _seStage = 5 
-                else if(_seTxt === "?" && _seCompStr[_sI+1] === "(") { //another sub block, reset
-                    _seStage = 0
-                    _sI--
-                }break
+            case 4: //find }
+                if(_seTxt === "}" && _seTxts === "?") { //end block, stack-
+                    _seStack--
+                    if(_seStack === 0) _seStage = 5 //end stack
+                }else if(_seTxt === "?" && _seTxts === "(") _seStack++ //another sub block, stack+
+                break
             case 5: //find ? (end)
-                if(_seTxt === "?"){
-                    //process here
-                    var _seProcessSign = _seCompCompile_process(_seBucket)
-                    _seCompStr = _seCompStr.split(_seBucket).join(_seProcessSign) //replace
-                    _sI = _seStartBlock //find again
-                    _seStage = 0 
-                }else if(_seTxt != " ") _seStage = 4 //get back
+                //process here
+                var _seProcessSign = _seCompCompile_process(_seBucket,_seStackBlock)
+                _seCompStr = _seCompStr.split(_seBucket).join(_seProcessSign) //replace
+                _sI = _seStartBlock //find again
+                _seStackBlock = 0 //reset
+                _seStage = 0 
                 break
-        }   
+        }if(_seTxt === "?" && _seTxts === "<") _seStackBlock++ //stack trace
+        else if(_seTxt === ">" && _seTxts === "?") _seStackBlock--
     _sI++}
     return _seCompStr
 }
-function _seCompCompile_process(seCompStr){
+function _seCompCompile_process(seCompStr,seStackBlock){
+    if(typeof SeObject.conds[seStackBlock] === "undefined") SeObject.conds[seStackBlock] = [] //create stack trace
     var _seComp = seCompStr.substring(seCompStr.indexOf("?(")+2,seCompStr.lastIndexOf("}?")).split("){") //split script
-    var _seCompCompileResult = "?"+(SeObject.conds).toString()+"{"+_seComp[1]+"}"+(SeObject.conds).toString()+"?" //make a sign
-    SeMessage.compCompiled += "case "+SeObject.conds.toString()+":return ("+_seRemoveSpace(_seComp[0]).split("$").join("data.")+");break;" //create a script
-    SeObject.conds++ //shift order
-    return _seCompCompileResult
+    var _seExpression = _seComp.shift() //pull expression
+        _seComp = _seComp.join("){") //return back
+    var _seStackBlockId = SeObject.conds[seStackBlock].length //get stack block id
+    var _seCond = "" //detect conditions
+    if(_seExpression.indexOf("if#") !== -1) _seCond = "if"
+    else if(_seExpression.indexOf("elif#") !== -1) _seCond = "elif"
+    else if(_seExpression.indexOf("else#") !== -1) _seCond = "else"
+    if(_seCond != "") {
+        SeObject.conds[seStackBlock][_seStackBlockId] = "if" //add to stack
+        _seExpression = _seExpression.split(_seCond+"#").join("") //remove from expression for js engine
+        if(_seCond !== "else")SeMessage.compCompiled += "case \""+seStackBlock.toString()+"."+_seStackBlockId.toString()+"\":return ("+_seRemoveSpace(_seExpression).split("$").join("data.")+");break;" //create a script, when not "else"
+    }else throw Error("Condition Error of condition \""+_seExpression+"\"")
+    return "?<"+seStackBlock.toString()+"."+_seStackBlockId.toString()+"{"+_seComp+"}"+seStackBlock.toString()+"."+_seStackBlockId.toString()+">?" //make a sign
 }
 function _seCompParse(seData, seCompStr){ //parse component
     if(SeMessage.compCompiled !== "" && SeMessage.compCompiled !== "!"){//if never deploy js engine before
         _seAdd("se-js",null,"function _SE_JSE_EVAL(scr,data){switch(scr){default: return null;"+SeMessage.compCompiled+"}}",document.body) //deploy
         SeMessage.compCompiled = "!" //clean
-    }
-    var _seResult = seCompStr
+    }var _seResult = seCompStr
     var _seDataKey, _seArrKey
     var _seCompParseMode = 2
-    var _seCondFound = true //conditional component
+    /*var _seCondFound = true //conditional component
     var _seCond = 0
     while(_seCondFound){
-        var _seCondStart = "?"+_seCond+"{"
+        var _seCondStart = "?<"+_seCond+"{"
         var _seCondStartIndex =  _seResult.indexOf(_seCondStart)
         if(_seCondStartIndex !== -1){//exists
-            var _seCondEnd = "}"+_seCond+"?"
+            var _seCondEnd = "}"+_seCond+">?"
             var _seCondComp = _seResult.substring(_seCondStartIndex+_seCondStart.length, _seResult.indexOf(_seCondEnd))
             if(window._SE_JSE_EVAL(_seCond,seData)===true) {
                 _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join(_seCondComp) //true
@@ -366,7 +377,7 @@ function _seCompParse(seData, seCompStr){ //parse component
                 _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join("") //false
             }
         _seCond++}else _seCondFound = false
-    }while(_seCompParseMode--){ //array component
+    }*/while(_seCompParseMode--){ //array component
         for(_seDataKey in seData) {
             var _seEmptyComp = "" //empty component
             var _seEmptyCompFront = "!"+_seDataKey+"{"

@@ -49,11 +49,26 @@ Se.res("comp","table",`
     <h1>No Contacts!</h1>
 }contact!
 
-?($x===3){
+?if($x===3){
     <h> Hello There! </h>
+    ?if($x===4){
+        <h> Cond0! </h>
+    }?
+    ?elif($x===5){
+        <h> Cond1! </h>
+    }?
+    ?else{
+        <h> Cond2! </h>
+        ?if($x===7){
+            <h> SubCond0! </h>
+        }?
+        ?else{
+            <h> SubCond1! </h>
+        }?
+    }?
 }?
-?($x===4){
-    <h> I Hidden! </h>
+?else{
+    <h> Good Bye! </h>
 }?
 `)
 window.x = Se.comp("table","root",{
