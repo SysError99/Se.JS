@@ -24,7 +24,7 @@ const SeObject = {
     css: document.createElement("style"), //css storage
     js: document.createElement("script"), //javascript storage
     comps:[], //components
-    conds:0 //conditional components
+    conds:[], //conditional components (by block stack)
 }
 /**
  * Add a request header for XMLHttpRequests.
@@ -56,8 +56,7 @@ export function request(seMethod, seTarget, seFunction){
             else seFunctionFailed()
         }
         _seXhttp.send()
-    }
-    else throw Error(SeMessage.XhttpErr)
+    }else throw Error(SeMessage.XhttpErr)
 }
 /**
  * Invoke all se-* attributes in elements.
@@ -180,13 +179,12 @@ export function comp(seComp, seTarget, seData) {
     else if(typeof seTarget === "object") {
         if(typeof seTarget.tagName === "string") _seCompParent = seTarget
         else _seCompParent = document.body
-    }
-    else _seCompParent = document.body
+    }else _seCompParent = document.body
     _seCompParent.appendChild( _seCompObj.element)
     if(seComp !== ""){//if comp is set
         if(typeof seData === "object") _seCompObj.set(seData)//if there is data in parameters
         else if(typeof seTarget === "object" && !_seIsElement(seTarget)) _seCompObj.set(seTarget)//if parmeter "target" is data
-        else if(_seCompObj.element.innerHTML === "") _seCompObj.set([])//if inner is empty (not used before, prevent setArr not working)
+        //else if(_seCompObj.element.innerHTML === "") _seCompObj.set([])//if inner is empty (not used before, prevent setArr not working)
     }return _seCompObj
 }
 /**
@@ -283,10 +281,12 @@ function _seCompCompile(seCompStr, seCompName){ //compile component
     var _seStack = 0
     var _seStage = 0
     var _seBucket = ""
+    var _seStackBlock = 0;
     var _seStartBlock = -1 //save process time
-    var _seCompStr = _seRemoveTab(seCompStr)
+    var _seCompStr = _seRemoveTab(seCompStr).split("?if(").join("?(if#").split("?elif(").join("?(elif#").split("?else{").join("?(else#){")
     while(_sI < _seCompStr.length){ //compile
         var _seTxt = _seCompStr[_sI]
+        var _seTxts= _seCompStr[_sI+1]
         if(_seStage > 0) {//putTxt
             _seBucket += _seTxt
         }else{
@@ -301,96 +301,108 @@ function _seCompCompile(seCompStr, seCompName){ //compile component
                 if(_seTxt === "(") { //start stack
                     _seStack = 1
                     _seStage = 2
-                }else if(Number.isNaN(_seTxt)) throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
-                else{//ignore compiled
+                }else{ //ignore compiled
                     _seStage = 0
                     _sI--
                 }break
             case 2: //find ( and ) until complete expression
                 if(_seTxt === "(") _seStack++
-                else if(_seTxt === ")"){ _seStack--
-                    if(_seStack === 0){ //end stack
-                        _seStage = 3
-                    }
+                else if(_seTxt === ")"){
+                    _seStack--
+                    if(_seStack === 0) _seStage = 3//end stack
                 }break
             case 3: //find {
-                if(_seTxt === "{") _seStage = 4
-                else throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
+                if(_seTxt === "{") {
+                    _seStack = 1
+                    _seStage = 4
+                }else throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
                 break
-            case 4: //find } or { when sub block
-                if(_seTxt === "}") _seStage = 5 
-                else if(_seTxt === "?" && _seCompStr[_sI+1] === "(") { //another sub block, reset
-                    _seStage = 0
-                    _sI--
-                }break
+            case 4: //find }
+                if(_seTxt === "}" && _seTxts === "?") { //end block, stack-
+                    _seStack--
+                    if(_seStack === 0) _seStage = 5 //end stack
+                }else if(_seTxt === "?" && _seTxts === "(") _seStack++ //another sub block, stack+
+                break
             case 5: //find ? (end)
-                if(_seTxt === "?"){
-                    //process here
-                    var _seProcessSign = _seCompCompile_process(_seBucket)
-                    _seCompStr = _seCompStr.split(_seBucket).join(_seProcessSign) //replace
-                    _sI = _seStartBlock //find again
-                    _seStage = 0 
-                }else if(_seTxt != " ") _seStage = 4 //get back
+                //process here
+                var _seProcessSign = _seCompCompile_process(_seBucket,_seStackBlock)
+                _seCompStr = _seCompStr.split(_seBucket).join(_seProcessSign) //replace
+                _sI = _seStartBlock //find again
+                _seStackBlock = 0 //reset
+                _seStage = 0 
                 break
-        }   
+        }if(_seTxt === "?" && _seTxts === "<") _seStackBlock++ //stack trace
+        else if(_seTxt === ">" && _seTxts === "?") _seStackBlock--
     _sI++}
     return _seCompStr
 }
-function _seCompCompile_process(seCompStr){
+function _seCompCompile_process(seCompStr,seStackBlock){
+    if(typeof SeObject.conds[seStackBlock] === "undefined") SeObject.conds[seStackBlock] = [] //create stack trace
     var _seComp = seCompStr.substring(seCompStr.indexOf("?(")+2,seCompStr.lastIndexOf("}?")).split("){") //split script
-    var _seCompCompileResult = "?"+(SeObject.conds).toString()+"{"+_seComp[1]+"}"+(SeObject.conds).toString()+"?" //make a sign
-    SeMessage.compCompiled += "case "+SeObject.conds.toString()+":return ("+_seRemoveSpace(_seComp[0]).split("$").join("data.")+");break;" //create a script
-    SeObject.conds++ //shift order
-    return _seCompCompileResult
+    var _seExpression = _seComp.shift() //pull expression
+        _seComp = _seComp.join("){") //return back
+    var _seStackBlockId = SeObject.conds[seStackBlock].length //get stack block id
+    var _seCond = "" //detect conditions
+    if(_seExpression.indexOf("elif#") !== -1) _seCond = "elif"
+    else if(_seExpression.indexOf("else#") !== -1) _seCond = "else"
+    else if(_seExpression.indexOf("if#") !== -1) _seCond = "if"
+    if(_seCond != "") {
+        SeObject.conds[seStackBlock][_seStackBlockId] = _seCond //add to stack
+        _seExpression = _seExpression.split(_seCond+"#").join("") //remove from expression for js engine
+        if(_seCond !== "else")SeMessage.compCompiled += "case \""+seStackBlock.toString()+"."+_seStackBlockId.toString()+"\":return ("+_seRemoveSpace(_seExpression).split("$").join("data.")+");break;" //create a script, when not "else"
+    }else throw Error("Condition Error of condition \""+_seExpression+"\"")
+    return "?<"+seStackBlock.toString()+"."+_seStackBlockId.toString()+"{"+_seComp+"}"+seStackBlock.toString()+"."+_seStackBlockId.toString()+">?" //make a sign
 }
 function _seCompParse(seData, seCompStr){ //parse component
     if(SeMessage.compCompiled !== "" && SeMessage.compCompiled !== "!"){//if never deploy js engine before
-        _seAdd("se-js",null,"function _SE_JSE_EVAL(scr,data){switch(scr){default: return null;"+SeMessage.compCompiled+"}}",document.body) //deploy
+        _seAdd("se-js",null,"function _SE_JSE_EVAL(scr,data){switch(scr){default: return true;"+SeMessage.compCompiled+"}}",document.body) //deploy
         SeMessage.compCompiled = "!" //clean
-    }
-    var _seResult = seCompStr
+    }var _seResult = seCompStr
     var _seDataKey, _seArrKey
     var _seCompParseMode = 2
-    var _seCondFound = true //conditional component
-    var _seCond = 0
-    while(_seCondFound){
-        var _seCondStart = "?"+_seCond+"{"
-        var _seCondStartIndex =  _seResult.indexOf(_seCondStart)
-        if(_seCondStartIndex !== -1){//exists
-            var _seCondEnd = "}"+_seCond+"?"
-            var _seCondComp = _seResult.substring(_seCondStartIndex+_seCondStart.length, _seResult.indexOf(_seCondEnd))
-            if(window._SE_JSE_EVAL(_seCond,seData)===true) {
-                _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join(_seCondComp) //true
+    var _seCond, _seCondTest, _seStack, _seStackBlock, _seStackIf, _seCondStart, _seCondStartIndex, _seCondEnd, _seCondComp,  _seKey, _seEmptyComp, _seEmptyCompFront, _seEmptyCompIndex, _seEmptyCompBack, _seSubComp, _seSubCompFront, _seSubCompIndex, _seSubCompData, _seSubCompBack
+    for(_seStack in SeObject.conds){ //conditional component
+        _seStackIf = true
+        for(_seStackBlock in SeObject.conds[_seStack]){
+            _seCond = _seStack+"."+_seStackBlock
+            _seCondStart = "?<"+_seCond+"{"
+            _seCondStartIndex =  _seResult.indexOf(_seCondStart)
+            if(_seCondStartIndex !== -1){ //exists
+                _seCondEnd = "}"+_seCond+">?"
+                _seCondComp = _seResult.substring(_seCondStartIndex+_seCondStart.length, _seResult.indexOf(_seCondEnd))//inside cond
+                if(SeObject.conds[_seStack][_seStackBlock] === "if") _seStackIf = true //if "if", reset
+                _seCondTest = window._SE_JSE_EVAL(_seCond,seData) //test
+                if(_seCondTest && _seStackIf){ //true
+                    _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join(_seCondComp)
+                    _seStackIf = false
+                }else _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join("") //false
             }
-            else {
-                _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join("") //false
-            }
-        _seCond++}else _seCondFound = false
+        }
     }while(_seCompParseMode--){ //array component
         for(_seDataKey in seData) {
-            var _seEmptyComp = "" //empty component
-            var _seEmptyCompFront = "!"+_seDataKey+"{"
-            var _seEmptyCompIndex = _seResult.indexOf(_seEmptyCompFront)
+            _seEmptyComp = "" //empty component
+            _seEmptyCompFront = "!"+_seDataKey+"{"
+            _seEmptyCompIndex = _seResult.indexOf(_seEmptyCompFront)
             if(_seEmptyCompIndex!==-1){
-                var _seEmptyCompBack = "}"+_seDataKey+"!"
+                _seEmptyCompBack = "}"+_seDataKey+"!"
                 _seEmptyComp = _seResult.substring(_seEmptyCompIndex+_seEmptyCompFront.length, _seResult.lastIndexOf(_seEmptyCompBack))//extract
                 _seResult = _seResult.split(_seEmptyCompFront+_seEmptyComp+_seEmptyCompBack).join("")
             }if(_seCompParseMode === 1 && typeof seData[_seDataKey] === "object") { //array or obj
-                var _seSubCompFront = "$"+_seDataKey+"{"
-                var _seSubCompIndex = _seResult.indexOf(_seSubCompFront)
+                _seSubCompFront = "$"+_seDataKey+"{"
+                _seSubCompIndex = _seResult.indexOf(_seSubCompFront)
                 if(_seSubCompIndex!==-1){
-                    var _seSubCompData = "" //sub component
-                    var _seSubCompBack = "}"+_seDataKey+"$"
-                    var _seSubComp = _seResult.substring(_seSubCompIndex+_seSubCompFront.length, _seResult.lastIndexOf(_seSubCompBack))//extract
+                    _seSubCompData = "" //sub component
+                    _seSubCompBack = "}"+_seDataKey+"$"
+                    _seSubComp = _seResult.substring(_seSubCompIndex+_seSubCompFront.length, _seResult.lastIndexOf(_seSubCompBack))//extract
                     for(_seArrKey in seData[_seDataKey]){ //data in array
                         if(typeof seData[_seDataKey][_seArrKey] === "object") _seSubCompData += _seCompParse(seData[_seDataKey][_seArrKey], _seSubComp)//object
                         else _seSubCompData += _seSubComp.split("$[]").join(seData[_seDataKey][_seArrKey]) //non-object
-                        _seSubCompData = _seSubCompData.split("$?").join(_seArrKey) //array number
+                        _seSubCompData = _seSubCompData.split("$@").join(_seArrKey) //array number
                     }if(_seSubCompData === "") _seSubCompData = _seEmptyComp//if empty
                     _seResult = _seResult.split(_seSubCompFront+_seSubComp+_seSubCompBack).join(_seSubCompData)
                 }
             }else if(_seCompParseMode === 0){ //others
-                var _seKey = _seResult.split("$"+_seDataKey)
+                _seKey = _seResult.split("$"+_seDataKey)
                 if(
                     Number.isNaN(seData[_seDataKey]) ||
                     seData[_seDataKey] === null ||

@@ -5,6 +5,11 @@ window.like = function(name){
     alert("You've Liked "+name)
 }
 
+window.edit = function(number){
+    data.contact[number].name = prompt("New Name")
+    Se.compSet(data, comp)
+}
+
 Se.res("comp","table",`
 <h1>Contacts</h1>
 <table>
@@ -40,7 +45,8 @@ Se.res("comp","table",`
                 </ol>
             </td>
             <td>
-                <button onclick="like('$name')">Like</button>
+                <button onclick="like($@)">Like</button>
+                <button onclick="edit($@)">Edit Name</button>
             </td>
         </tr>
     }contact$
@@ -49,15 +55,33 @@ Se.res("comp","table",`
     <h1>No Contacts!</h1>
 }contact!
 
-?($x===3){
+?if($x===3){
     <h> Hello There! </h>
+    ?if($y===4){
+        <h> Cond0! </h>
+    }?
+    ?elif($y===5){
+        <h> Cond1! </h>
+    }?
+    ?else{
+        <h> Cond2! </h>
+        ?if($z===6){
+            <h> SubCond0! </h>
+        }?
+        ?else{
+            <h> SubCond1! </h>
+        }?
+    }?
 }?
-?($x===4){
-    <h> I Hidden! </h>
+?else{
+    <h> Good Bye! </h>
 }?
 `)
-window.x = Se.comp("table","root",{
+let data = {
     x: 3,
+    y: 4,
+    z: 6,
+    time: 0,
     contact:[
         {
             name: "Somchai",
@@ -72,4 +96,5 @@ window.x = Se.comp("table","root",{
             hate:[]
         }
     ]
-})
+}
+var comp = Se.comp("table","root", data)
