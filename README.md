@@ -14,7 +14,7 @@ Just clone this project to your folder. Actually, only `se.js` file is required.
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Hellow Se.JS!</title>
+    <title>Hello Se.JS!</title>
 </head>
 <body>
     Hello Se.JS!
@@ -76,7 +76,7 @@ In the complete web page, it should look like this:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Hellow Se.JS!</title>
+    <title>Hello Se.JS!</title>
 </head>
 <body>
     <!--Navigation bar goes here!-->
