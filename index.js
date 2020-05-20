@@ -1,8 +1,8 @@
 import * as Se from "./js/se.js"
 import * as Navbar from "./navbar.js"
 
-window.like = function(name){
-    alert("You've Liked "+name)
+window.like = function(number){
+    alert("You've Liked "+data.contact[number].name)
 }
 
 window.edit = function(number){
