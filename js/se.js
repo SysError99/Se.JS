@@ -332,13 +332,12 @@ function _seCompCompile_process(seCompStr,seStackBlock){
     return "?<"+seStackBlock.toString()+"."+_seStackBlockId.toString()+"{"+_seComp+"}"+seStackBlock.toString()+"."+_seStackBlockId.toString()+">?" //make a sign
 }
 function _seCompParse(seData, seCompStr){ //parse component
+    var _seDataKey, _seArrKey, _seCond, _seCondTest, _seStack, _seStackBlock, _seStackIf, _seCondStart, _seCondStartIndex, _seCondEnd, _seCondComp,  _seKey, _seEmptyComp, _seEmptyCompFront, _seEmptyCompIndex, _seEmptyCompBack, _seSubComp, _seSubCompFront, _seSubCompIndex, _seSubCompData, _seSubCompBack
     if(SeMessage.compCompiled !== "" && SeMessage.compCompiled !== "!"){//if never deploy js engine before
         _seAdd("se-js",null,"function _SE_JSE_EVAL(scr,data){switch(scr){default: return true;"+SeMessage.compCompiled+"}}",document.body) //deploy
         SeMessage.compCompiled = "!" //clean
     }var _seResult = seCompStr
-    var _seDataKey, _seArrKey
     var _seCompParseMode = 2
-    var _seCond, _seCondTest, _seStack, _seStackBlock, _seStackIf, _seCondStart, _seCondStartIndex, _seCondEnd, _seCondComp,  _seKey, _seEmptyComp, _seEmptyCompFront, _seEmptyCompIndex, _seEmptyCompBack, _seSubComp, _seSubCompFront, _seSubCompIndex, _seSubCompData, _seSubCompBack
     for(_seStack in SeObject.conds){ //conditional component
         _seStackIf = true
         for(_seStackBlock in SeObject.conds[_seStack]){
