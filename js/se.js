@@ -133,9 +133,9 @@ export function unload(seTarget, seLocation) {
  */
 export function comp(seComp, seTarget, seData) {
     var _seCompParent
-    if(typeof seComp === "string") this.comp = seComp //component
-    else this.comp = ""
+    this.component = ""
     this.element = document.createElement("div") //element
+    if(typeof seComp === "string") this.component = seComp //set component
     if(typeof seTarget === "string") _seCompParent = document.getElementById(seTarget) //where to put in
     else if(typeof seTarget === "object") {
         if(_seIsElement(seTarget) === "string") _seCompParent = seTarget
@@ -143,8 +143,8 @@ export function comp(seComp, seTarget, seData) {
     }else _seCompParent = document.body
     _seCompParent.appendChild(this.element)
     if(seComp !== ""){//if comp is set
-        if(typeof seData === "object") _seCompObj.set(seData)//if there is data in parameters
-        else if(typeof seTarget === "object" && !_seIsElement(seTarget)) _seCompObj.set(seTarget)//if parmeter "target" is data
+        if(typeof seData === "object") compSet(this, seData)//if there is data in parameters
+        else if(typeof seTarget === "object" && !_seIsElement(seTarget)) compSet(this, seTarget)//if parmeter "target" is data
     }
 }
 /**
@@ -173,8 +173,8 @@ comp.prototype.clean = function() { compClean(this) }
  */
 export function compSet(seComp,seData){
     var seCompWaiter = setInterval(function(){ //wait for loaded components
-        if(typeof SeObject.comps[seComp.comp] === "string"){
-            seComp.element.innerHTML = _seCompParse(seData, SeObject.comps[seComp.comp])
+        if(typeof SeObject.comps[seComp.component] === "string"){
+            seComp.element.innerHTML = _seCompParse(seData, SeObject.comps[seComp.component])
             clearInterval(seCompWaiter)//kill waiter
         }
     },2)

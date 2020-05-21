@@ -7,7 +7,7 @@ window.like = function(number){
 
 window.edit = function(number){
     data.contact[number].name = prompt("New Name")
-    Se.compSet(data, comp)
+    comp.set(data)
 }
 
 Se.res("comp","table",`
