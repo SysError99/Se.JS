@@ -97,4 +97,4 @@ let data = {
         }
     ]
 }
-var comp = Se.comp("table","root", data)
+var comp = new Se.comp("table","root", data)

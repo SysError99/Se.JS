@@ -132,67 +132,46 @@ export function unload(seTarget, seLocation) {
  * @returns {object} A component object.
  */
 export function comp(seComp, seTarget, seData) {
-    var _seComp, _seCompObj, _seCompParent
-    if(typeof seComp === "string") _seComp = seComp
-    else _seComp = ""
-    _seCompObj = {
-        comp: _seComp,
-        element: document.createElement("div"),
-        /**
-         * Fetch data to component.
-         * @param {object} seData
-         */
-        set: function(seData){
-            compSet(seData, this)
-        },
-        /**
-         * Set a component to be used, and fetch data to component
-         * @param {string} seCompName Component name to be used
-         * @param {object} seData Object or array of data
-         */
-        setComp: function(seCompName, seData){
-            this.comp = seCompName
-            compSet(seData, this)
-        },
-        /**
-         * Set visibility of the component
-         * @param {string} seVisibility Visibility
-         */
-        visibility: function(seVisibility){
-            compVisibility(this, seVisibility)
-        },
-        /**
-         * Set display mode for the component
-         * @param {string} seCompDisplay Display mode
-         */
-        display: function(seCompDisplay){
-            compDisplay(this,seCompDisplay)
-        },
-        /**
-         * Clean a component (innerHTML)
-         */
-        clean: function(){
-            compClean(this)
-        }
-    }
-    if(typeof seTarget === "string") _seCompParent = document.getElementById(seTarget)//where to put in
+    var _seCompParent
+    if(typeof seComp === "string") this.comp = seComp //component
+    else this.comp = ""
+    this.element = document.createElement("div") //element
+    if(typeof seTarget === "string") _seCompParent = document.getElementById(seTarget) //where to put in
     else if(typeof seTarget === "object") {
-        if(typeof seTarget.tagName === "string") _seCompParent = seTarget
+        if(_seIsElement(seTarget) === "string") _seCompParent = seTarget
         else _seCompParent = document.body
     }else _seCompParent = document.body
-    _seCompParent.appendChild( _seCompObj.element)
+    _seCompParent.appendChild(this.element)
     if(seComp !== ""){//if comp is set
         if(typeof seData === "object") _seCompObj.set(seData)//if there is data in parameters
         else if(typeof seTarget === "object" && !_seIsElement(seTarget)) _seCompObj.set(seTarget)//if parmeter "target" is data
-        //else if(_seCompObj.element.innerHTML === "") _seCompObj.set([])//if inner is empty (not used before, prevent setArr not working)
-    }return _seCompObj
+    }
 }
 /**
- * Fetch data to component.
- * @param {object} seData Object of data to be used.
- * @param {object} seComp Target component.
+ * Set component with the data.
+ * @param {object} seData Data that will be used by the component.
  */
-export function compSet(seData, seComp){
+comp.prototype.set = function(seData) { compSet(this, seData) }
+/**
+ * Set component visibility.
+ * @param {string} seVisibility Visibility.
+ */
+comp.prototype.visibility = function(seVisibility) { compVisibility(this, seVisibility) }
+/**
+ * Set component display.
+ * @param {string} seDisplay Display mode.
+ */
+comp.prototype.display = function(seDisplay) { compDisplay(this, seDisplay) }
+/**
+ * Clean a component (innerHTML)
+ */
+comp.prototype.clean = function() { compClean(this) }
+/**
+ * Fetch data to component.
+ * @param {object} seComp Target component.
+ * @param {object} seData Object of data to be used.
+ */
+export function compSet(seComp,seData){
     var seCompWaiter = setInterval(function(){ //wait for loaded components
         if(typeof SeObject.comps[seComp.comp] === "string"){
             seComp.element.innerHTML = _seCompParse(seData, SeObject.comps[seComp.comp])
@@ -254,8 +233,7 @@ function _seRemoveTab(seStr){
             else _seNotTab = true
         }
         _seTextSplit[_sRI] = _seTextSplit[_sRI].substring(_sRII,_seTextSplit[_sRI].length)
-    }
-    return _seTextSplit.join("\n")
+    }return _seTextSplit.join("\n")
 }
 function _seRemoveSpace(seStr){
     var _sRI = 0
@@ -273,8 +251,7 @@ function _seRemoveSpace(seStr){
             _seRemoved += _seTxt
             if(_seTxt === _seQuoteSign) _seQuoteSign = ""
         }
-    _sRI++}
-    return _seRemoved
+    _sRI++}return _seRemoved
 }
 function _seCompCompile(seCompStr, seCompName){ //compile component
     var _sI = 0
@@ -333,23 +310,19 @@ function _seCompCompile(seCompStr, seCompName){ //compile component
                 break
         }if(_seTxt === "?" && _seTxts === "<") _seStackBlock++ //stack trace
         else if(_seTxt === ">" && _seTxts === "?") _seStackBlock--
-    _sI++}
-    return _seCompStr
+    _sI++}return _seCompStr
 }
 function _seCompCompile_process(seCompStr,seStackBlock){
     if(typeof SeObject.conds[seStackBlock] === "undefined") SeObject.conds[seStackBlock] = [] //create stack trace
-    var _seComp = seCompStr.substring(seCompStr.indexOf("?(")+2,seCompStr.lastIndexOf("}?")).split("){") //split script
+    var _seComp = seCompStr.substring(2,seCompStr.length-2).split("){") //split script
     var _seExpression = _seComp.shift() //pull expression
         _seComp = _seComp.join("){") //return back
     var _seStackBlockId = SeObject.conds[seStackBlock].length //get stack block id
-    var _seCond = "" //detect conditions
-    if(_seExpression.indexOf("elif#") !== -1) _seCond = "elif"
-    else if(_seExpression.indexOf("else#") !== -1) _seCond = "else"
-    else if(_seExpression.indexOf("if#") !== -1) _seCond = "if"
+    var _seCond = _seExpression.substring(0, _seExpression.indexOf("#"))//detect conditions
     if(_seCond != "") {
         SeObject.conds[seStackBlock][_seStackBlockId] = _seCond //add to stack
         _seExpression = _seExpression.split(_seCond+"#").join("") //remove from expression for js engine
-        if(_seCond !== "else")SeMessage.compCompiled += "case \""+seStackBlock.toString()+"."+_seStackBlockId.toString()+"\":return ("+_seRemoveSpace(_seExpression).split("$").join("data.")+");break;" //create a script, when not "else"
+        if(_seCond !== "else") SeMessage.compCompiled += "case \""+seStackBlock.toString()+"."+_seStackBlockId.toString()+"\":return ("+_seRemoveSpace(_seExpression).split("$").join("data.")+");break;" //create a script, when not "else"
     }else throw Error("Condition Error of condition \""+_seExpression+"\"")
     return "?<"+seStackBlock.toString()+"."+_seStackBlockId.toString()+"{"+_seComp+"}"+seStackBlock.toString()+"."+_seStackBlockId.toString()+">?" //make a sign
 }
@@ -434,8 +407,7 @@ function _seCreateCORSRequest(_seMethod, _seUrl, _seAsync){ //CORSRequest
         var _seRequestHeaders = SeObject.requestHeaders.length
         while(_seRequestHeaders--)
             _seXhr.setRequestHeader(SeObject.requestHeaders[_seRequestHeaders]["header"],SeObject.requestHeaders[_seRequestHeaders]["value"])
-    }
-    return _seXhr
+    }return _seXhr
 }
 function _seLoad(_seAttr, _seFile, _seElmnt){ //load from file
     if(_seAttr === "se-js") console.warn(SeMessage.jsImportWarn)

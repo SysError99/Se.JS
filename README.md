@@ -351,7 +351,7 @@ Now let's put `array bracket`s in! It should look like this:
 And that's it! Now you have complete reusable component for your web page. Let's put some code to make a magic happen! Do you still remember component name of this example? It is `"post"`! Now put it in `Se.comp()` function!
 ```javascript
 //This command creates a component, then instantly show the result.
-window.postComponent = Se.comp("post",data)
+window.postComponent = new Se.comp("post",data)
 ```
 To summarise, all of the rest should look like this:
 ```javascript
@@ -467,6 +467,6 @@ let data = {
     ]
 }
 //Create and show the result.
-window.postComponent = Se.comp("post",data)
+window.postComponent = new Se.comp("post",data)
 ```
 And we are all set for this part!
