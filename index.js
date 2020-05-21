@@ -1,19 +1,19 @@
 import * as Se from "./js/se.js"
 
-Se.functions.like = function(number){
+//Delare Functions!
+Se.global.like = function(number){
     alert("You've Liked "+data.contact[number].name)
 }
 
-Se.functions.edit = function(number){
-    data.contact[number].name = prompt("New Name")
-    comp.set(data)
+Se.global.edit = function(number){
+    Se.global.comp.data.contact[number].name = prompt("New Name")
 }
 
-Se.functions.reverse = function(number){
-    data.contact[number].name = data.contact[number].name.split('').reverse().join('')
-    comp.set(data)
+Se.global.reverse = function(number){
+    Se.global.comp.data.contact[number].name = data.contact[number].name.split('').reverse().join('')
 }
 
+//Setup Resources
 Se.res("comp","table",`
 <h1>Contacts</h1>
 <table>
@@ -102,4 +102,6 @@ let data = {
         }
     ]
 }
-var comp = new Se.comp("table","root", data)
+
+//Create a component!
+Se.global.comp = new Se.reactComp("table","root",data)
