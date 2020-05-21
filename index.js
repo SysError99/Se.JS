@@ -14,7 +14,7 @@ Se.global.reverse = function(number){
 }
 
 //Setup Resources
-Se.res("comp","table",`
+Se.res("comp","table",/*html*/`
 <h1>Contacts</h1>
 <table>
     <tr>
@@ -61,25 +61,25 @@ Se.res("comp","table",`
 }contact!
 
 ?if($x===3){
-    <h> Hello There! </h>
+    <h1> Hello There! </h1>
     ?if($y===4){
-        <h> Cond0! </h>
+        <h2> Cond0! </h2>
     }?
     ?elif($y===5){
-        <h> Cond1! </h>
+        <h2> Cond1! </h2>
     }?
     ?else{
-        <h> Cond2! </h>
+        <h3> Cond2! </h3>
         ?if($z===6){
-            <h> SubCond0! </h>
+            <h3> SubCond0! </h3>
         }?
         ?else{
-            <h> SubCond1! </h>
+            <h3> SubCond1! </h3>
         }?
     }?
 }?
 ?else{
-    <h> Good Bye! </h>
+    <h1> Good Bye! </h1>
 }?
 `)
 let data = {
