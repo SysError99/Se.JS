@@ -1,11 +1,11 @@
 import * as Se from "./js/se.js"
 import * as Navbar from "./navbar.js"
 
-window.like = function(number){
+Se.functions.like = function(number){
     alert("You've Liked "+data.contact[number].name)
 }
 
-window.edit = function(number){
+Se.functions.edit = function(number){
     data.contact[number].name = prompt("New Name")
     comp.set(data)
 }
@@ -45,8 +45,8 @@ Se.res("comp","table",`
                 </ol>
             </td>
             <td>
-                <button onclick="like($@)">Like</button>
-                <button onclick="edit($@)">Edit Name</button>
+                <button onclick="Se.like($@)">Like</button>
+                <button onclick="Se.edit($@)">Edit Name</button>
             </td>
         </tr>
     }contact$

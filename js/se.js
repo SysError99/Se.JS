@@ -25,6 +25,7 @@ const SeObject = {
     js: document.createElement("script"), //javascript storage
     comps:[], //components
     conds:[], //conditional components (by block stack)
+    funcs:{} //functions created for module
 }
 /**
  * Add a request header for XMLHttpRequests.
@@ -124,6 +125,10 @@ export function unload(seTarget, seLocation) {
         if(seElmnt) seElmnt.innerHTML = ""
     }
 }
+/**
+ * Functions declared for Se components.
+ */
+export var functions = SeObject.funcs
 /**
  * Create an element from component
  * @param {string} [seComp] Loaded component location (without file extension)
@@ -449,5 +454,6 @@ function _se(){
     SeObject.js.id = "se-js"
     _seDocHead.appendChild(SeObject.css)
     _seDocHead.appendChild(SeObject.js)
+    window.Se = functions //append function holder to global scope
     invoke()
 }_se()
