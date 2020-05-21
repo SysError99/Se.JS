@@ -1,5 +1,4 @@
 import * as Se from "./js/se.js"
-import * as Navbar from "./navbar.js"
 
 Se.functions.like = function(number){
     alert("You've Liked "+data.contact[number].name)
@@ -7,6 +6,11 @@ Se.functions.like = function(number){
 
 Se.functions.edit = function(number){
     data.contact[number].name = prompt("New Name")
+    comp.set(data)
+}
+
+Se.functions.reverse = function(number){
+    data.contact[number].name = data.contact[number].name.split('').reverse().join('')
     comp.set(data)
 }
 
@@ -47,6 +51,7 @@ Se.res("comp","table",`
             <td>
                 <button onclick="Se.like($@)">Like</button>
                 <button onclick="Se.edit($@)">Edit Name</button>
+                <button onclick="Se.reverse($@)">Reverse Name</button>
             </td>
         </tr>
     }contact$

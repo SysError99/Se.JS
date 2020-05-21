@@ -55,16 +55,29 @@ But in Se.JS, it is 'dead simple' Just put an `attribute` in any HTML tags you w
     <div class="footer"></div>
 </body>
 ```
-If you want to put your navigation bar file, for now it is named `navbar.html`. You just put `se-html` attribute in the tag like this:
+If you want to put your navigation bar file, for now it is named `navbar.html`, also has a structure like this:
+```html
+<div class="topnav">
+    <a> ≡ Navigator</a>
+    <div class="topnav-menu" id="navlinks">
+        <a href="index.html"> Home</a>
+        <a href="images.html"> Photos</a>
+        <a href="map.html"> Map</a>
+        <a href="reserve.php"> Reserve</a>
+        <a href="scr_auth.php"> Login</a>
+        <a href="scr_auth.php"> Report</a>
+        <a href="contact.php"> Contact Us</a>
+    </div>
+</div>
+```
+To import it, you just put `se-html` attribute in the tag like this:
 ```html
 <body>
     <!--Navigation bar goes here!-->
     <div class="navbar" se-html="navbar.html"></div>
-    <!--Content goes here!-->
     <div class="content">
         Some of cool content goes here!
     </div>
-    <!--Footer goes here-->
     <div class="footer"></div>
 </body>
 ```
@@ -72,6 +85,7 @@ For other components, like CSS file, you can also put `se-css` attribute somewhe
 In the complete web page, it should look like this:
 ```html
 <html>
+<!-- CSS is here! -->
 <head se-css="awesome.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -79,20 +93,17 @@ In the complete web page, it should look like this:
     <title>Hello Se.JS!</title>
 </head>
 <body>
-    <!--Navigation bar goes here!-->
     <div class="navbar" se-html="navbar.html"></div>
-    <!--Content goes here!-->
     <div class="content">
         Some of cool content goes here!
     </div>
-    <!--Footer goes here-->
     <div class="footer"></div>
 </body>
 </html>
 ```
 Vala, we have done with the Page Module!
 
-> Note: Due to security concerns, if you want to import JavaScript for your page module, you have to define them in your index.js (or other name as you desire) instead via `window` object like `window.toggle = function {/** toggle navbar**/}`
+> Note: Due to security concerns, put `<script>` tag inside page module will not work. I'd suggest you to put `<script src="navbar.js"></script>` alongside your `<div>` of the page module, or using Se.Js's`component`, which I'll talk more about it later.
 
 ---
 ## Component

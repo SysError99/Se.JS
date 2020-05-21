@@ -1,4 +1,4 @@
-window.toggle = function() {
+function toggle() {
   var navobj = document.getElementById("navlinks");
   if (navobj.style.display === "block") {
     navobj.style.display = "none";
