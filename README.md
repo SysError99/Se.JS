@@ -103,7 +103,7 @@ In the complete web page, it should look like this:
 ```
 Vala, we have done with the Page Module!
 
-> Note: Due to security concerns, put `<script>` tag inside page module will not work. I'd suggest you to put `<script src="navbar.js"></script>` alongside your `<div>` of the page module, or using Se.Js's`component`, which I'll talk more about it later.
+> Note: Due to security concerns, put `<script>` tag inside page module will not work. I'd suggest you to put `<script src="navbar.js"></script>` alongside your `<div>` of the page module, or using Se.JS's`component`, which I'll talk more about it later.
 
 ---
 ## Component
