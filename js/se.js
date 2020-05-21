@@ -105,6 +105,7 @@ export function resFile(seType, seFile, seElement) {
     else if(typeof seElement === "object") seElmnt = seElement
     else seElmnt = document.body
     if(seType==="js") console.warn(SeMessage.jsImportWarn)
+    else if(seType==="comp") console.warn(SeMessage.compCompiledWarn)
     else _seLoad("se-"+seType, seFile, seElmnt) //load file
 }
 /** 
@@ -453,8 +454,7 @@ function _seCreateCORSRequest(_seMethod, _seUrl, _seAsync){ //CORSRequest
     }return _seXhr
 }
 function _seLoad(_seAttr, _seFile, _seElmnt){ //load from file
-    if(_seAttr === "se-js") console.warn(SeMessage.jsImportWarn)
-    else request("GET", _seFile, function(seResponse){
+    request("GET", _seFile, function(seResponse){
         _seAdd(_seAttr, _seFile, seResponse, _seElmnt)
     })
 }
