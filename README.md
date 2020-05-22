@@ -574,7 +574,16 @@ Now for our HTML component:
 ### Event Handling
 There are no specific `event handling` methods designed for Se.JS. To be honest, at least for me, I don't really find them useful. But that does not mean it is impossible to implement event handling for Se.JS. I provided some ways to make event handling for the component. Let's get started!
 
-In Se.JS, there is a space called `Se.global`, which is used for declaring anything you wanted for the browser environment (since putting anything in global scope is a bad practice) In a module script, we can provide a new thing like this:
+First, let's understand how browser's JavaScript work.
+In the browser, there are at leaast 2 scopes of area
+1. `module` scope, where `Se.JS` is working.
+2. `browser`, `global` or `window` scope, where the browser and regular scripts are in.
+
+Generally, both of these are seperated, and can't be accessed by each other, especially in browser scope. JavaScript module also provides `window` as browser scope in the module, and can be accessed directly. We can use this area to communicate between module and browser.
+
+However, using `window` to declare things is considerd a "bad practice", since it increases JavaScript engine overhead, reduces code maintainability, and risk of unexpected default scope changes. So there is a solution for this.
+
+In Se.JS, there is a space called `Se.global`, which is used for declaring anything you wanted for the browser environment (since putting anything in global scope is a bad practice) In a module script, we can provide a new thing uisng `Se.global` like this:
 ```javascript
 import * as Se from "./js/se.js"
 
@@ -582,12 +591,13 @@ import * as Se from "./js/se.js"
 Se.global.x = 0
 Se.global.arr = []
 Se.global.obj = {}
-Se.global.greet = () => {
+Se.global.greet = () => { //function
     alert('Hello World!')
 }
 ```
 Now in HTML component/page, we can use them via `Se` object:
 ```html
+    <!-- Call greet() from Se.global in module -->
     <button onclick="Se.greet()">Greet!</button>
 ```
 To do a combination with `component` we can use symbol `$@` to define a position we want to interact with. Let's see an example, a `fruit basket` application:
@@ -598,12 +608,17 @@ import * as Se from "./js/se.js"
 Se.res("comp","fruitBasketApp",`
 <h2> Fruit Basket </h2>
 <input id="fruit-name" type="text"><br><br>
+
+<!-- We use only "Se." for browser scope -->
 <button onclick="Se.fruitAdd()">Add this fruit</button>
 
 ?if($fruits.length !== 0){
 <ol>
     $fruits{
-        <li> $[] </li>
+        <li>
+            <!-- $@ is used to declare data position, $[] is used to pull data from position -->
+            $[] <button onclick="Se.fruitEdit($@)">Edit</button>
+        </li>
     }fruits$
 </ol>
 }?
@@ -618,8 +633,11 @@ let comp = new Se.reactComp('fruitBasketApp',{
 })
 
 //functions
-Se.global.fruitAdd = function(){
+Se.global.fruitAdd = function(){ //We use "Se.global." in module scope.
     var fruitName = Se.ele('fruit-name').value //Se.ele() is a shorthand of document.getElementById()
     comp.data.fruits.push(fruitName) //push new fruit to array
+}
+Se.global.fruitEdit = function(pos){
+    comp.data.fruits[pos] = prompt('Enter new fruit name: ')
 }
 ```
