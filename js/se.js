@@ -3,29 +3,23 @@
  * @author SysError99 (SysError_)
  * @version 0.1
  */
-/**
- * An object contains error messages in the framework
- */
 const SeMessage = {
     compNameInvalid: "Invalid name of seComp (is it a string?)",
     compCompileErr0_0: "Unusual characters betweetn \"?\" and \"(\" or between \")\" and \"{\" of the component \"",
     compCompileErr0_1: "\"!",
-    compCompiledWarn: "All component expressions loaded before are statically compiled, all contidional components loaded after this will not work!",
+    compCompiledWarn: "Due to security concerns, all contidional components loaded after this will not work!",
     jsImportWarn: "Any scripts imported by resFile() will not work, due to to security concerns.\n Implement your scripts in your webpage.html or webpage.js instead.",
     XhttpErr: "XMLHttpRequest failed, is it supported?",
     compCompiled:""
 }
-/**
- * An object of the framework.
- */
 const SeObject = {
     requestHeaders: [], //request headers [n] ["header": "value"]
-    modules: ["se-html", "se-css", "se-js"], //modules to be loaded via se.invoke()
+    modules: ["se-html", "se-css"], //modules to be loaded via se.invoke()
     css: document.createElement("style"), //css storage
     js: document.createElement("script"), //javascript storage
     comps:[], //components
     conds:[], //conditional components (by block stack)
-    funcs:{} //functions created for module
+    globs:{} //global declare for Se related things
 }
 /**
  * Add a request header for XMLHttpRequests.
@@ -43,20 +37,21 @@ export function addRequestHeader(seHeader, seValue){
  */
 export function clearRequestHeader(){SeObject.requestHeaders = []}
 /**
- * 
+ * Make a request.
  * @param {string} seMethod Request method GET, POST
  * @param {string} seTarget Target of request (ex: script.php)
+ * @param {string} seData Data to be sent.
  * @param {function} [seFunctionSuccess] Function to be called when request is success.
  * @param {function} [seFunctionFailed] Function to be called when request is failed.
  */
-export function request(seMethod, seTarget, seFunction){
+export function request(seMethod, seTarget, seData, seFunctionSuccess, seFunctionFailed){
     var _seXhttp = _seCreateCORSRequest(seMethod, seTarget, true)
     if(_seXhttp!=null){
         _seXhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) if(typeof seFunction === "function") seFunction(this.responseText)
-            else seFunctionFailed()
+            if (this.readyState == 4 && this.status == 200) if(typeof seFunctionSuccess === "function") seFunctionSuccess(this.responseText)
+            else if(typeof seFunctionFailed === "function") seFunctionFailed()
         }
-        _seXhttp.send()
+        _seXhttp.send(seData)
     }else throw Error(SeMessage.XhttpErr)
 }
 /**
@@ -105,6 +100,7 @@ export function resFile(seType, seFile, seElement) {
     else if(typeof seElement === "object") seElmnt = seElement
     else seElmnt = document.body
     if(seType==="js") console.warn(SeMessage.jsImportWarn)
+    else if(seType==="comp") console.warn(SeMessage.compCompiledWarn)
     else _seLoad("se-"+seType, seFile, seElmnt) //load file
 }
 /** 
@@ -126,9 +122,38 @@ export function unload(seTarget, seLocation) {
     }
 }
 /**
- * Functions declared for Se components.
+ * Shorthand for documenrt.getElementsByClassName()
+ * @param {string} seClassName Class name.
+ * @return {array} Element array.
  */
-export var functions = SeObject.funcs
+export function elesClass(seClassName){return document.getElementsByClassName(seClassName)}
+/**
+ * Shorthand for document.getElementsByName()
+ * @param {string} seName Name of Tag.
+ * @return {array} Element array.
+ */
+export function elesName(seName){return document.getElementsByName(seName)}
+/**
+ * Shorthand for document.getElementsByNameNS()
+ * @param {string} seNS Namespace name.
+ * @param {string} seName Local Name.
+ * @return {array} Element array.
+ */
+export function elesNS(seNS, seName){return document.getElementsByTagNameNS(seNS,seName)}
+/** Shorthand for doucument.getElementsByTagName() 
+ * @param {string} seTag Tag Name.
+ * @return {array} Element array.
+*/
+export function elesTag(seTag){return document.getElementsByTagName(seTag)}
+/** Shorthand for document.getElementById()
+ * @param {string} seId Element ID.
+ * @return {object} Element
+ */
+export function ele(seId){return document.getElementById(seId)}
+/**
+ * Objects/functions declared for Se components.
+ */
+export var global = SeObject.globs
 /**
  * Create an element from component
  * @param {string} [seComp] Loaded component location (without file extension)
@@ -137,26 +162,36 @@ export var functions = SeObject.funcs
  * @returns {object} A component object.
  */
 export function comp(seComp, seTarget, seData) {
-    var _seCompParent
+    _seCompDeploy()
+    this._data = {}
     this.component = ""
-    this.element = document.createElement("div") //element
+    this.element = _seCompElement(seTarget)
     if(typeof seComp === "string") this.component = seComp //set component
+    if(seComp !== ""){//if comp is set
+        if(typeof seData === "object") this._data //if there is data in parameters
+        else if(typeof seTarget === "object" && !_seIsElement(seTarget)) this._data //if parmeter "target" is data
+        compSet(this, this._data)
+    }
+}
+function _seCompElement(seTarget){
+    var _seCompParent
+    var _seElement = document.createElement("div") //element
     if(typeof seTarget === "string") _seCompParent = document.getElementById(seTarget) //where to put in
     else if(typeof seTarget === "object") {
         if(_seIsElement(seTarget) === "string") _seCompParent = seTarget
         else _seCompParent = document.body
     }else _seCompParent = document.body
-    _seCompParent.appendChild(this.element)
-    if(seComp !== ""){//if comp is set
-        if(typeof seData === "object") compSet(this, seData)//if there is data in parameters
-        else if(typeof seTarget === "object" && !_seIsElement(seTarget)) compSet(this, seTarget)//if parmeter "target" is data
-    }
+    _seCompParent.appendChild(_seElement)
+    return _seElement
 }
 /**
  * Set component with the data.
  * @param {object} seData Data that will be used by the component.
  */
-comp.prototype.set = function(seData) { compSet(this, seData) }
+comp.prototype.set = function(seData) {
+    if(typeof seData === "undefined") compSet(this, this._data)
+    else compSet(this, seData)
+}
 /**
  * Set component visibility.
  * @param {string} seVisibility Visibility.
@@ -171,6 +206,37 @@ comp.prototype.display = function(seDisplay) { compDisplay(this, seDisplay) }
  * Clean a component (innerHTML)
  */
 comp.prototype.clean = function() { compClean(this) }
+/**
+ * Create a reactive element from component
+ * @param {string} [seComp] Loaded component location (without file extension)
+ * @param {string|object} [seTarget] Target to insert this component in (optional, append to document.body by default)
+ * @param {array|object} [seData] Data to be put in.
+ * @returns {object} A component object.
+ */
+export function reactComp(seComp, seTarget, seData){
+    _seCompDeploy()
+    this._data = {}
+    this.component = ""
+    this.element = _seCompElement(seTarget)
+    if(typeof seComp === "string") this.component = seComp //set component
+    if(seComp !== ""){//if comp is set
+        if(typeof seData === "object") this._data = seData //if there is data in parameters
+        else if(typeof seTarget === "object" && !_seIsElement(seTarget)) this._data = seTarget //if parmeter "target" is data
+        compSet(this, this._data)
+    }var _seComp = this //reactive
+    var _seReactCompTrigger = {
+        comp: _seComp, data: _seComp._data,
+        get(_seData, _seDataKey) {
+            if (typeof _seData[_seDataKey] === 'object' && _seData[_seDataKey] !== null) return new Proxy(_seData[_seDataKey], _seReactCompTrigger)
+            else return _seData[_seDataKey]
+        },set(_seData, _seDataKey, _seDataValue){
+            _seData[_seDataKey] = _seDataValue
+            compSet(this.comp, this.data)
+            return true
+        }
+    }
+    this.data = new Proxy(this._data,_seReactCompTrigger)
+}reactComp.prototype = Object.create(comp.prototype)
 /**
  * Fetch data to component.
  * @param {object} seComp Target component.
@@ -327,18 +393,14 @@ function _seCompCompile_process(seCompStr,seStackBlock){
     if(_seCond != "") {
         SeObject.conds[seStackBlock][_seStackBlockId] = _seCond //add to stack
         _seExpression = _seExpression.split(_seCond+"#").join("") //remove from expression for js engine
-        if(_seCond !== "else") SeMessage.compCompiled += "case \""+seStackBlock.toString()+"."+_seStackBlockId.toString()+"\":return ("+_seRemoveSpace(_seExpression).split("$").join("data.")+");break;" //create a script, when not "else"
+        if(_seCond !== "else") SeMessage.compCompiled += "case \""+seStackBlock.toString()+"."+_seStackBlockId.toString()+"\":return ("+_seRemoveSpace(_seExpression).split("$").join("b.")+");break;" //create a script, when not "else"
     }else throw Error("Condition Error of condition \""+_seExpression+"\"")
     return "?<"+seStackBlock.toString()+"."+_seStackBlockId.toString()+"{"+_seComp+"}"+seStackBlock.toString()+"."+_seStackBlockId.toString()+">?" //make a sign
 }
 function _seCompParse(seData, seCompStr){ //parse component
-    if(SeMessage.compCompiled !== "" && SeMessage.compCompiled !== "!"){//if never deploy js engine before
-        _seAdd("se-js",null,"function _SE_JSE_EVAL(scr,data){switch(scr){default: return true;"+SeMessage.compCompiled+"}}",document.body) //deploy
-        SeMessage.compCompiled = "!" //clean
-    }var _seResult = seCompStr
-    var _seDataKey, _seArrKey
+    var _seDataKey, _seArrKey, _seCond, _seCondTest, _seStack, _seStackBlock, _seStackIf, _seCondStart, _seCondStartIndex, _seCondEnd, _seCondComp,  _seKey, _seEmptyComp, _seEmptyCompFront, _seEmptyCompIndex, _seEmptyCompBack, _seSubComp, _seSubCompFront, _seSubCompIndex, _seSubCompData, _seSubCompBack
+    var _seResult = seCompStr
     var _seCompParseMode = 2
-    var _seCond, _seCondTest, _seStack, _seStackBlock, _seStackIf, _seCondStart, _seCondStartIndex, _seCondEnd, _seCondComp,  _seKey, _seEmptyComp, _seEmptyCompFront, _seEmptyCompIndex, _seEmptyCompBack, _seSubComp, _seSubCompFront, _seSubCompIndex, _seSubCompData, _seSubCompBack
     for(_seStack in SeObject.conds){ //conditional component
         _seStackIf = true
         for(_seStackBlock in SeObject.conds[_seStack]){
@@ -349,7 +411,7 @@ function _seCompParse(seData, seCompStr){ //parse component
                 _seCondEnd = "}"+_seCond+">?"
                 _seCondComp = _seResult.substring(_seCondStartIndex+_seCondStart.length, _seResult.indexOf(_seCondEnd))//inside cond
                 if(SeObject.conds[_seStack][_seStackBlock] === "if") _seStackIf = true //if "if", reset
-                _seCondTest = window._SE_JSE_EVAL(_seCond,seData) //test
+                _seCondTest = window.__SEEXPRESSION__(_seCond,seData) //test
                 if(_seCondTest && _seStackIf){ //true
                     _seResult = _seResult.split(_seCondStart+_seCondComp+_seCondEnd).join(_seCondComp)
                     _seStackIf = false
@@ -357,7 +419,7 @@ function _seCompParse(seData, seCompStr){ //parse component
             }
         }
     }while(_seCompParseMode--){ //array component
-        for(_seDataKey in seData) {
+        for(_seDataKey in seData) if(typeof seData[_seDataKey] !== "function") {
             _seEmptyComp = "" //empty component
             _seEmptyCompFront = "!"+_seDataKey+"{"
             _seEmptyCompIndex = _seResult.indexOf(_seEmptyCompFront)
@@ -374,7 +436,7 @@ function _seCompParse(seData, seCompStr){ //parse component
                     _seSubComp = _seResult.substring(_seSubCompIndex+_seSubCompFront.length, _seResult.lastIndexOf(_seSubCompBack))//extract
                     for(_seArrKey in seData[_seDataKey]){ //data in array
                         if(typeof seData[_seDataKey][_seArrKey] === "object") _seSubCompData += _seCompParse(seData[_seDataKey][_seArrKey], _seSubComp)//object
-                        else _seSubCompData += _seSubComp.split("$[]").join(seData[_seDataKey][_seArrKey]) //non-object
+                        else if(typeof seData[_seDataKey][_seArrKey] !== "function") _seSubCompData += _seSubComp.split("$[]").join(seData[_seDataKey][_seArrKey]) //non-object
                         _seSubCompData = _seSubCompData.split("$@").join(_seArrKey) //array number
                     }if(_seSubCompData === "") _seSubCompData = _seEmptyComp//if empty
                     _seResult = _seResult.split(_seSubCompFront+_seSubComp+_seSubCompBack).join(_seSubCompData)
@@ -390,6 +452,12 @@ function _seCompParse(seData, seCompStr){ //parse component
             }
         }
     }return _seResult
+}
+function _seCompDeploy(){
+    if(SeMessage.compCompiled !== "" && SeMessage.compCompiled !== "!"){//if never deploy js engine before
+        _seAdd("se-js",null,"__SEEXPRESSION__=(a,b)=>{switch(a){default: return true;"+SeMessage.compCompiled+"}}",document.body) //deploy
+        SeMessage.compCompiled = "!" //clean
+    }else console.warn(SeMessage.compCompiledWarn)
 }
 function _seIntervalTimeout(_seInterval){//kill interval if out of time
     setTimeout(function(){
@@ -415,8 +483,7 @@ function _seCreateCORSRequest(_seMethod, _seUrl, _seAsync){ //CORSRequest
     }return _seXhr
 }
 function _seLoad(_seAttr, _seFile, _seElmnt){ //load from file
-    if(_seAttr === "se-js") console.warn(SeMessage.jsImportWarn)
-    else request("GET", _seFile, function(seResponse){
+    request("GET", _seFile, "", function(seResponse){
         _seAdd(_seAttr, _seFile, seResponse, _seElmnt)
     })
 }
@@ -450,10 +517,8 @@ function _seIsElement(_seObj){
 function _se(){
     //Append to header
     var _seDocHead  = document.getElementsByTagName('head')[0]
-    SeObject.css.id = "se-css"
-    SeObject.js.id = "se-js"
     _seDocHead.appendChild(SeObject.css)
     _seDocHead.appendChild(SeObject.js)
-    window.Se = functions //append function holder to global scope
+    window.Se = global //append function holder to global scope
     invoke()
 }_se()

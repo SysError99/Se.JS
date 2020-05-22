@@ -1,20 +1,20 @@
 import * as Se from "./js/se.js"
 
-Se.functions.like = function(number){
+//Delare Functions!
+Se.global.like = function(number){
     alert("You've Liked "+data.contact[number].name)
 }
 
-Se.functions.edit = function(number){
-    data.contact[number].name = prompt("New Name")
-    comp.set(data)
+Se.global.edit = function(number){
+    Se.global.comp.data.contact[number].name = prompt("New Name")
 }
 
-Se.functions.reverse = function(number){
-    data.contact[number].name = data.contact[number].name.split('').reverse().join('')
-    comp.set(data)
+Se.global.reverse = function(number){
+    Se.global.comp.data.contact[number].name = data.contact[number].name.split('').reverse().join('')
 }
 
-Se.res("comp","table",`
+//Setup Resources
+Se.res("comp","table",/*html*/`
 <h1>Contacts</h1>
 <table>
     <tr>
@@ -33,20 +33,20 @@ Se.res("comp","table",`
                 $like{
                     <li>$[]</li>
                 }like$
+                </ol>
                 !like{
                     <p>No likes</p>
                 }like!
-                </ol>
             </td>
             <td>
                 <ol>
                 $hate{
                     <li>$[]</li>
                 }hate$
+                </ol>
                 !hate{
                     <p>No hates</p>
                 }hate!
-                </ol>
             </td>
             <td>
                 <button onclick="Se.like($@)">Like</button>
@@ -61,25 +61,25 @@ Se.res("comp","table",`
 }contact!
 
 ?if($x===3){
-    <h> Hello There! </h>
+    <h1> Hello There! </h1>
     ?if($y===4){
-        <h> Cond0! </h>
+        <h2> Cond0! </h2>
     }?
     ?elif($y===5){
-        <h> Cond1! </h>
+        <h2> Cond1! </h2>
     }?
     ?else{
-        <h> Cond2! </h>
+        <h3> Cond2! </h3>
         ?if($z===6){
-            <h> SubCond0! </h>
+            <h3> SubCond0! </h3>
         }?
         ?else{
-            <h> SubCond1! </h>
+            <h3> SubCond1! </h3>
         }?
     }?
 }?
 ?else{
-    <h> Good Bye! </h>
+    <h1> Good Bye! </h1>
 }?
 `)
 let data = {
@@ -102,4 +102,6 @@ let data = {
         }
     ]
 }
-var comp = new Se.comp("table","root", data)
+
+//Create a component!
+Se.global.comp = new Se.reactComp("table","root",data)

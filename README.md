@@ -112,27 +112,21 @@ In dynamic websites, they take request from users, process them, then send resul
 
 Basically, using jQuery/AJAX can achieve this and give a result you expected, like this:
 ```javascript
-$.ajax({
-    url: "getData.php" ,
-    type: "POST",
-    data: ''
-}).success(function(result) {
-    var obj = jQuery.parseJSON(result);
-    if(obj != ''){
-        $("#body").empty();
-        $.each(obj, function(key, val) {
-            var tr = "<tr>";
-            tr = tr + "<td>" + val["CustomerID"] + "</td>";
-            tr = tr + "<td>" + val["Name"] + "</td>";
-            tr = tr + "<td>" + val["Email"] + "</td>";
-            tr = tr + "<td>" + val["CountryCode"] + "</td>";
-            tr = tr + "<td>" + val["Budget"] + "</td>";
-            tr = tr + "<td>" + val["Used"] + "</td>";
-            tr = tr + "</tr>";
-            $('#table > tbody:last').append(tr);
-        });
-    }
-});
+var obj = jQuery.parseJSON(result);
+if(obj != ''){
+    $("#body").empty();
+    $.each(obj, function(key, val) {
+        var tr = "<tr>";
+        tr = tr + "<td>" + val["CustomerID"] + "</td>";
+        tr = tr + "<td>" + val["Name"] + "</td>";
+        tr = tr + "<td>" + val["Email"] + "</td>";
+        tr = tr + "<td>" + val["CountryCode"] + "</td>";
+        tr = tr + "<td>" + val["Budget"] + "</td>";
+        tr = tr + "<td>" + val["Used"] + "</td>";
+        tr = tr + "</tr>";
+        $('#table > tbody:last').append(tr);
+    });
+}
 ```
 This may not look like a big deal. But what if your data have plenty of them, or they are stacked up, like this social media's post:
 ```javascript
@@ -202,7 +196,7 @@ Se.res("comp","post",`
     <!--HTML Goes Here--->
 `)
 ```
-When `"comp"` stands for the `component` (other res types can also be used, including `"css"`, `"html"`, `"js"`, but they are more easier using attributes in the HTML file), `"post"` stands for component name, and the last parameter is where we put HTML code in. But before continue, we need to understand how the component works first.
+When `"comp"` stands for the `component` (other res types can also be used, including `"css"`, `"html"`, but they are more easier using attributes in the HTML file), `"post"` stands for component name, and the last parameter is where we put HTML code in. But before continue, we need to understand how the component works first.
 
 ---
 ### Object Properties
@@ -359,16 +353,16 @@ Now let's put `array bracket`s in! It should look like this:
 
     </div>
 ```
-And that's it! Now you have complete reusable component for your web page. Let's put some code to make a magic happen! Do you still remember component name of this example? It is `"post"`! Now put it in `Se.comp()` function!
+And that's it! Now you have complete reusable component for your web page. Let's put some code to make a magic happen! Do you still remember component name of this example? It is `"post"`! Now put it in `Se.comp()`!
 ```javascript
 //This command creates a component, then instantly show the result.
-window.postComponent = new Se.comp("post",data)
+let postComment = new Se.comp("post",data)
 ```
 To summarise, all of the rest should look like this:
 ```javascript
 import * as Se from "./js/se.js"
 
-//A reusable component.
+//Create a component named "post"
 Se.res("comp","post",`
     <div id="$id-post" class="post">
 
@@ -424,7 +418,7 @@ Se.res("comp","post",`
 
     </div>
 `)
-//A data
+//Create data object
 let data = {
     id: 1234,
     name: "johnmccrane0420",
@@ -477,7 +471,152 @@ let data = {
         }
     ]
 }
-//Create and show the result.
-window.postComponent = new Se.comp("post",data)
+//Create component using "post" component, and bind the data.
+let postComment = new Se.comp("post",data)
 ```
 And we are all set for this part!
+
+### Reactive Component
+In modern JavaScript Frameworks, like Vue.js, it provides many cool things to make a development much easier, one of them is `reactive` component.
+
+A `reactive` component is form of component that is "reactive", means that the object has instant reaction with data they received. No need to trigger any events or watchers to make them happen. Se.JS also provides a `reactive` component, which can be useful im some cases, like minor data update. The component can be declared with `Se.reactComp()` prototype.
+```javascript
+var comp = new Se.reactComp("compName", data, target)
+```
+When `"compName"` stands for component name, `data` stand for data to be bound (can be left empty), and `target` stands for ID to target to be bound by the component.
+
+Everytime you want to get or set some data, simply type `comp.data` followed by anything you want, like `comp
+
+---
+### Empty Object Properties
+Data received from the server can be varied. To dealing with empty data, simply put `empty bracket`, then put your HTML code as you desire. Let's take a look for an example:
+```javascript
+var data = {
+    name: ""
+}
+```
+For the structure of `empty bracket`, it looks like this:
+```html
+!propertyName{
+    <Your-contents-here>
+}propertyName!
+```
+For this example, name of the property is `name`, now apply to HTML code for the component:
+```html
+$name{
+    <h1> Your name is $name. </h1>
+}$name
+!name{
+    <h1> I don't know your name! </h1>
+}name!
+```
+This structure can also be applied to `array` too. To access your data inside array, simply put `$[]` inside the component you want to access, using `$@` will tell a position of data:
+```javascript
+var data = {
+    contact:["John", "Leona", "Bruce"]
+}
+```
+HTML:
+```html
+<div id="contact">
+    <ol>
+        $contact{
+            <li> $[] (Number $@) </li>
+        }contact$
+    </ol>
+    !contact{
+            <h1> No contacts! </h1>
+    }contact!
+</div>
+```
+Now, you may notice some flaws in this HTML, that `<ol>` tag is "NOT" supposed to be here when there is no data in the array. This is how `conditional component` comes in place. Let's continue on!
+
+---
+### Conditional Component
+In many cases, conditions need to be applied for the component to behave as we desire. In Se.JS, a `conditional component` has a structure like this:
+```html
+?condition(expression){
+    <Contents-Here>
+}?
+```
+For `condition` (conditional statement) in Se.JS, there are 3 of them:
++ `if` condition.
++ `elif` (else if) condition.
++ `else` condition.
+
+For `expression`, it can be anything in JavaScript, from common expressions, to all functions that return values.
+
+Let's go for some examples! Here is our data.
+```javascript
+var data = {
+    fruits: ["Apple","Banana","Cherry","Durian"]
+}
+```
+Now for our HTML component:
+```html
+?if($fruits.length !== 0){
+    <h1> Our Basket </h1>
+    <ol>
+        $fruits{
+            <li> $[] </li>
+        }fruits$
+    </ol>
+}?
+?else{
+    <h1> Our basket is empty! <h1>
+}?
+```
+
+---
+### Event Handling
+There are no specific `event handling` methods designed for Se.JS. To be honest, at least for me, I don't really find them useful. But that does not mean it is impossible to implement event handling for Se.JS. I provided some ways to make event handling for the component. Let's get started!
+
+In Se.JS, there is a space called `Se.global`, which is used for declaring anything you wanted for the browser environment (since putting anything in global scope is a bad practice) In a module script, we can provide a new thing like this:
+```javascript
+import * as Se from "./js/se.js"
+
+//declare something
+Se.global.x = 0
+Se.global.arr = []
+Se.global.obj = {}
+Se.global.greet = () => {
+    alert('Hello World!')
+}
+```
+Now in HTML component/page, we can use them via `Se` object:
+```html
+    <button onclick="Se.greet()">Greet!</button>
+```
+To do a combination with `component` we can use symbol `$@` to define a position we want to interact with. Let's see an example, a `fruit basket` application:
+```javascript
+import * as Se from "./js/se.js"
+
+//component resource
+Se.res("comp","fruitBasketApp",`
+<h2> Fruit Basket </h2>
+<input id="fruit-name" type="text"><br><br>
+<button onclick="Se.fruitAdd()">Add this fruit</button>
+
+?if($fruits.length !== 0){
+<ol>
+    $fruits{
+        <li> $[] </li>
+    }fruits$
+</ol>
+}?
+?else{
+    <h4> No fruits. </h4>
+}?
+`)
+
+//component
+let comp = new Se.reactComp('fruitBasketApp',{
+    fruits:[]
+})
+
+//functions
+Se.global.fruitAdd = function(){
+    var fruitName = Se.ele('fruit-name').value //Se.ele() is a shorthand of document.getElementById()
+    comp.data.fruits.push(fruitName) //push new fruit to array
+}
+```
