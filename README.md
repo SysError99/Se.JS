@@ -481,9 +481,9 @@ And we are all set for this part!
 
 ---
 ### Reactive Component
-In modern JavaScript Frameworks, like Vue.js, it provides many cool things to make a development much easier, one of them is `reactive` component.
+In modern JavaScript Frameworks, like Vue.js, it provides many cool things to make a development much easier, one of them is 'reactivity'. But in Se.JS, it's called a `reactive` component.
 
-A `reactive` component is a form of the component that is "reactive", means that the object has instant reaction with data they received. No need to trigger any events or watchers to make them happen. Se.JS also provides a `reactive` component, which can be useful im some cases, like minor data update. The component can be declared with `Se.reactComp()` prototype.
+A `reactive` component is a form of the component that is "reactive", means that the object has instant reaction with data they received. No need to trigger any events or watchers to make them happen. Se.JS also provides a `reactive` component, which can be useful in some cases, like minor data update. The component can be declared with `Se.reactComp()` prototype.
 ```javascript
 var comp = new Se.reactComp("compId","compName", data, target)
 ```
@@ -645,21 +645,21 @@ Se.global.fruitEdit = function(pos){
 ```
 
 ---
-### Component Name
-Unlike many JavaScript frameworks, in Se.JS, there is no way specifically provided for components to have their own functions (You can implement them, but you can't use them) So, to make components be able to use the same function, you have to `name` a component.
+### Component ID
+Unlike many JavaScript frameworks, in Se.JS, there is no way specifically provided for components to have their own functions (You can implement them, but you can't use them) So, to make components be able to use the same function, you have to assign a `component ID` for a component.
 
-Name being used for a component can be number, or string:
+Component ID being used for a component can be number, or string:
 ```javascript
 var object = new Se.comp("myName")
 ```
-You can also find a component using name with `Se.where()` function
+You can also find a component using ID with `Se.where()` function
 ```javascript
 var objFound = Se.where("myName")
 ```
-In a component structure, to access a component name, simply put `$#?` in anywhere you want to delare it:
+In a component structure, to access a component ID, simply put `$#?` in anywhere you want to delare it:
 ```javascript
 Se.res("comp","myComponent",`
-    <h1> My name is $#?. </h1>
+    <h1> My ID is $#?. </h1>
 `)
 ```
 To implement functions be able to be used by many of components, we can declare an array for storing components Let's take a look for an example. We need many `post` components:
@@ -678,13 +678,14 @@ Se.res("comp","postComponent",`
 //create an array for post components.
 const posts = []
 function newPost (){
-    //component name can be a number.
-    posts.push(new Se.reactComp(posts.length,"postComponent",{
+    //We use posts.length for assigning ID.
+    posts.push(new Se.reactComp( posts.length,"postComponent",{
         text: "This is a post.",
         like: 0,
         comment: ""
     }))
 }
+//create functions for components
 Se.global.postLike = function(pos){
     posts[pos].data.like++
     alert("You have liked post number "+pos)
