@@ -476,6 +476,7 @@ let postComment = new Se.comp("post",data)
 ```
 And we are all set for this part!
 
+---
 ### Reactive Component
 In modern JavaScript Frameworks, like Vue.js, it provides many cool things to make a development much easier, one of them is `reactive` component.
 
