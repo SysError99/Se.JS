@@ -127,6 +127,35 @@ export function unload(seTarget, seLocation) {
     }
 }
 /**
+ * Shorthand for documenrt.getElementsByClassName()
+ * @param {string} seClassName Class name.
+ * @return {array} Element array.
+ */
+export function elesClass(seClassName){return document.getElementsByClassName(seClassName)}
+/**
+ * Shorthand for document.getElementsByName()
+ * @param {string} seName Name of Tag.
+ * @return {array} Element array.
+ */
+export function elesName(seName){return document.getElementsByName(seName)}
+/**
+ * Shorthand for document.getElementsByNameNS()
+ * @param {string} seNS Namespace name.
+ * @param {string} seName Local Name.
+ * @return {array} Element array.
+ */
+export function elesNS(seNS, seName){return document.getElementsByTagNameNS(seNS,seName)}
+/** Shorthand for doucument.getElementsByTagName() 
+ * @param {string} seTag Tag Name.
+ * @return {array} Element array.
+*/
+export function elesTag(seTag){return document.getElementsByTagName(seTag)}
+/** Shorthand for document.getElementById()
+ * @param {string} seId Element ID.
+ * @return {object} Element
+ */
+export function ele(seId){return document.getElementById(seId)}
+/**
  * Objects/functions declared for Se components.
  */
 export var global = SeObject.globs
