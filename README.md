@@ -481,9 +481,9 @@ And we are all set for this part!
 
 ---
 ### Reactive Component
-In modern JavaScript Frameworks, like Vue.js, it provides many cool things to make a development much easier, one of them is `reactive` component.
+In modern JavaScript Frameworks, like Vue.js, it provides many cool things to make a development much easier, one of them is 'reactivity'. But in Se.JS, it's called a `reactive` component.
 
-A `reactive` component is a form of the component that is "reactive", means that the object has instant reaction with data they received. No need to trigger any events or watchers to make them happen. Se.JS also provides a `reactive` component, which can be useful im some cases, like minor data update. The component can be declared with `Se.reactComp()` prototype.
+A `reactive` component is a form of the component that is "reactive", means that the object has instant reaction with data they received. No need to trigger any events or watchers to make them happen. Se.JS also provides a `reactive` component, which can be useful in some cases, like minor data update. The component can be declared with `Se.reactComp()` prototype.
 ```javascript
 var comp = new Se.reactComp("compId","compName", data, target)
 ```
