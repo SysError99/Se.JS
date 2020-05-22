@@ -139,12 +139,14 @@ export var global = SeObject.globs
  */
 export function comp(seComp, seTarget, seData) {
     _seCompDeploy()
+    this._data = {}
     this.component = ""
     this.element = _seCompElement(seTarget)
     if(typeof seComp === "string") this.component = seComp //set component
     if(seComp !== ""){//if comp is set
-        if(typeof seData === "object") compSet(this, seData)//if there is data in parameters
-        else if(typeof seTarget === "object" && !_seIsElement(seTarget)) compSet(this, seTarget)//if parmeter "target" is data
+        if(typeof seData === "object") this._data //if there is data in parameters
+        else if(typeof seTarget === "object" && !_seIsElement(seTarget)) this._data //if parmeter "target" is data
+        compSet(this, this._data)
     }
 }
 function _seCompElement(seTarget){
@@ -162,7 +164,10 @@ function _seCompElement(seTarget){
  * Set component with the data.
  * @param {object} seData Data that will be used by the component.
  */
-comp.prototype.set = function(seData) { compSet(this, seData) }
+comp.prototype.set = function(seData) {
+    if(typeof seData === "undefined") compSet(this, this._data)
+    else compSet(this, seData)
+}
 /**
  * Set component visibility.
  * @param {string} seVisibility Visibility.
@@ -390,7 +395,7 @@ function _seCompParse(seData, seCompStr){ //parse component
             }
         }
     }while(_seCompParseMode--){ //array component
-        for(_seDataKey in seData) {
+        for(_seDataKey in seData) if(typeof seData[_seDataKey] !== "function") {
             _seEmptyComp = "" //empty component
             _seEmptyCompFront = "!"+_seDataKey+"{"
             _seEmptyCompIndex = _seResult.indexOf(_seEmptyCompFront)
@@ -407,7 +412,7 @@ function _seCompParse(seData, seCompStr){ //parse component
                     _seSubComp = _seResult.substring(_seSubCompIndex+_seSubCompFront.length, _seResult.lastIndexOf(_seSubCompBack))//extract
                     for(_seArrKey in seData[_seDataKey]){ //data in array
                         if(typeof seData[_seDataKey][_seArrKey] === "object") _seSubCompData += _seCompParse(seData[_seDataKey][_seArrKey], _seSubComp)//object
-                        else _seSubCompData += _seSubComp.split("$[]").join(seData[_seDataKey][_seArrKey]) //non-object
+                        else if(typeof seData[_seDataKey][_seArrKey] !== "function") _seSubCompData += _seSubComp.split("$[]").join(seData[_seDataKey][_seArrKey]) //non-object
                         _seSubCompData = _seSubCompData.split("$@").join(_seArrKey) //array number
                     }if(_seSubCompData === "") _seSubCompData = _seEmptyComp//if empty
                     _seResult = _seResult.split(_seSubCompFront+_seSubComp+_seSubCompBack).join(_seSubCompData)

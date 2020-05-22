@@ -33,20 +33,20 @@ Se.res("comp","table",/*html*/`
                 $like{
                     <li>$[]</li>
                 }like$
+                </ol>
                 !like{
                     <p>No likes</p>
                 }like!
-                </ol>
             </td>
             <td>
                 <ol>
                 $hate{
                     <li>$[]</li>
                 }hate$
+                </ol>
                 !hate{
                     <p>No hates</p>
                 }hate!
-                </ol>
             </td>
             <td>
                 <button onclick="Se.like($@)">Like</button>
