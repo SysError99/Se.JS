@@ -104,4 +104,4 @@ let data = {
 }
 
 //Create a component!
-Se.global.comp = new Se.reactComp("table","root",data)
+Se.global.comp = new Se.reactComp("ContactsTable", "table", "root", data)

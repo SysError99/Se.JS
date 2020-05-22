@@ -5,6 +5,9 @@
  */
 const SeMessage = {
     compNameInvalid: "Invalid name of seComp (is it a string?)",
+    compIdEmptyErr: "Component ID as string cannot be empty!",
+    compIdBoolErr: "Component ID cannot be boolean!",
+    compIdObjErr: "Component ID cannot be object!",
     compCompileErr0_0: "Unusual characters betweetn \"?\" and \"(\" or between \")\" and \"{\" of the component \"",
     compCompileErr0_1: "\"!",
     compCompiledWarn: "Due to security concerns, all contidional components loaded after this will not work!",
@@ -19,7 +22,8 @@ const SeObject = {
     js: document.createElement("script"), //javascript storage
     comps:[], //components
     conds:[], //conditional components (by block stack)
-    globs:{} //global declare for Se related things
+    globs:{}, //global declare for Se related things
+    acmps:[] //active components
 }
 /**
  * Add a request header for XMLHttpRequests.
@@ -155,14 +159,31 @@ export function ele(seId){return document.getElementById(seId)}
  */
 export var global = SeObject.globs
 /**
+ * Find a component with name
+ * @param {string|number} seName name of the component
+ */
+export function where(seName){
+    var _seIndex
+    var _seResult = null
+    for(_seIndex in seName){
+        if(SeObject.acmps[_seIndex].id === seName){
+            _seResult = SeObject.acmps[_seIndex]
+            break
+        }
+    }return _seResult
+}
+/**
  * Create an element from component
+ * @param {string|number} seId component ID. 
  * @param {string} [seComp] Loaded component location (without file extension)
  * @param {string|object} [seTarget] Target to insert this component in (optional, append to document.body by default)
  * @param {array|object} [seData] Data to be put in.
  * @returns {object} A component object.
  */
-export function comp(seComp, seTarget, seData) {
+export function comp(seId, seComp, seTarget, seData) {
+    _seCheckCompId(seId)
     _seCompDeploy()
+    this.id = seId
     this._data = {}
     this.component = ""
     this.element = _seCompElement(seTarget)
@@ -172,6 +193,12 @@ export function comp(seComp, seTarget, seData) {
         else if(typeof seTarget === "object" && !_seIsElement(seTarget)) this._data //if parmeter "target" is data
         compSet(this, this._data)
     }
+    SeObject.acmps.push(this)
+}
+function _seCheckCompId(seId){
+    if(typeof seId === "string") {if(seId === "") throw Error(SeObject.compIdEmptyErr)}
+    else if(typeof seId === "boolean") throw Error(SeObject.compIdBoolErr)
+    else if(typeof seId === "object") throw Error(SeMessage.compIdObjErr)
 }
 function _seCompElement(seTarget){
     var _seCompParent
@@ -207,14 +234,21 @@ comp.prototype.display = function(seDisplay) { compDisplay(this, seDisplay) }
  */
 comp.prototype.clean = function() { compClean(this) }
 /**
+ * Kill the component
+ */
+comp.prototype.kill = function() { compKill (this) }
+/**
  * Create a reactive element from component
+ * @param {string|number} seId component ID. 
  * @param {string} [seComp] Loaded component location (without file extension)
  * @param {string|object} [seTarget] Target to insert this component in (optional, append to document.body by default)
  * @param {array|object} [seData] Data to be put in.
  * @returns {object} A component object.
  */
-export function reactComp(seComp, seTarget, seData){
+export function reactComp(seId, seComp, seTarget, seData){
+    _seCheckCompId(seId)
     _seCompDeploy()
+    this.id = seId
     this._data = {}
     this.component = ""
     this.element = _seCompElement(seTarget)
@@ -236,6 +270,7 @@ export function reactComp(seComp, seTarget, seData){
         }
     }
     this.data = new Proxy(this._data,_seReactCompTrigger)
+    SeObject.acmps.push(this)
 }reactComp.prototype = Object.create(comp.prototype)
 /**
  * Fetch data to component.
@@ -245,7 +280,7 @@ export function reactComp(seComp, seTarget, seData){
 export function compSet(seComp,seData){
     var seCompWaiter = setInterval(function(){ //wait for loaded components
         if(typeof SeObject.comps[seComp.component] === "string"){
-            seComp.element.innerHTML = _seCompParse(seData, SeObject.comps[seComp.component])
+            seComp.element.innerHTML = _seCompParse(seData, SeObject.comps[seComp.component]).split("$#?").join(seComp.id) //also set comp id in component
             clearInterval(seCompWaiter)//kill waiter
         }
     },2)
@@ -291,6 +326,23 @@ export function compClean(seComp){
         }
     },2)
     _seIntervalTimeout(seCompWaiter)
+}
+/**
+ * Kill a component.
+ * @param {object} seComp Target component.
+ */
+export function compKill(seComp){
+    var _seIndex
+    for(_seIndex in SeObject.acmps){
+        if(SeObject.acmps[_seIndex] === seComp){
+            SeObject.acmps[_seIndex] = null
+            break
+        }
+    }
+    seComp.data = null
+    seComp._data = null
+    seComp.element.parentNode.removeChild(seComp.element)
+    seComp.element = null
 }
 function _seRemoveTab(seStr){
     var _seTextSplit = seStr.split("\n")

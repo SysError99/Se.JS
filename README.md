@@ -356,8 +356,10 @@ Now let's put `array bracket`s in! It should look like this:
 And that's it! Now you have complete reusable component for your web page. Let's put some code to make a magic happen! Do you still remember component name of this example? It is `"post"`! Now put it in `Se.comp()`!
 ```javascript
 //This command creates a component, then instantly show the result.
-let postComment = new Se.comp("post",data)
+let postComment = new Se.comp("objPost", "post", data)
 ```
+When `"objPost"` stands for component ID (string can also be used), `"post"` stands for component name that wil be used, and `data` stands for data to be bound (can be left empty)
+
 To summarise, all of the rest should look like this:
 ```javascript
 import * as Se from "./js/se.js"
@@ -472,7 +474,7 @@ let data = {
     ]
 }
 //Create component using "post" component, and bind the data.
-let postComment = new Se.comp("post",data)
+let postComment = new Se.comp("objPost", "post",data)
 ```
 And we are all set for this part!
 > Note: Any value assigned to the component with dollar sign `($)` must be exist. Se.JS component will not automatically delete them if assigned data do not exist. At least, they must be empty, or you will have a strange tags or dollar sign values like `$something`
@@ -483,9 +485,9 @@ In modern JavaScript Frameworks, like Vue.js, it provides many cool things to ma
 
 A `reactive` component is a form of the component that is "reactive", means that the object has instant reaction with data they received. No need to trigger any events or watchers to make them happen. Se.JS also provides a `reactive` component, which can be useful im some cases, like minor data update. The component can be declared with `Se.reactComp()` prototype.
 ```javascript
-var comp = new Se.reactComp("compName", data, target)
+var comp = new Se.reactComp("compId","compName", data, target)
 ```
-When `"compName"` stands for component name, `data` stand for data to be bound (can be left empty), and `target` stands for ID to target to be bound by the component.
+When `"compId"` stands for component ID, `"compName"` stands for component name, `data` stand for data to be bound (can be left empty), and `target` stands for ID to target to be bound by the component.
 
 Everytime you want to get or set some data, simply type `comp.data` followed by anything you want, like `comp.data.name = "John"`. When you change the value, the component will get updated instantly.
 > If you have to assign many values in one time, or you don't need a reactive website, I'd suggest you to use regular `Se.comp()` instead.
@@ -628,7 +630,7 @@ Se.res("comp","fruitBasketApp",`
 `)
 
 //component
-let comp = new Se.reactComp('fruitBasketApp',{
+let comp = new Se.reactComp('myApp', 'fruitBasketApp',{
     fruits:[]
 })
 
@@ -641,3 +643,4 @@ Se.global.fruitEdit = function(pos){
     comp.data.fruits[pos] = prompt('Enter new fruit name: ')
 }
 ```
+As you will see, event handling in Se.JS is simple, but the weakness of this approach is also exist. That means every part of this component can't behave as `Class`es, and not duplicatable.
