@@ -11,6 +11,7 @@ const SeMessage = {
     compCompileErr0_0: "Unusual characters betweetn \"?\" and \"(\" or between \")\" and \"{\" of the component \"",
     compCompileErr0_1: "\"!",
     compCompiledWarn: "Due to security concerns, all contidional components loaded after this will not work!",
+    compFileWarn: "Due to security concerns, any conditional components dynamically loaded from resFile() will not work!",
     jsImportWarn: "Any scripts imported by resFile() will not work, due to to security concerns.\n Implement your scripts in your webpage.html or webpage.js instead.",
     XhttpErr: "XMLHttpRequest failed, is it supported?",
     compCompiled:""
@@ -103,8 +104,11 @@ export function resFile(seType, seFile, seElement) {
     if(typeof seElement === "string") seElmnt = document.getElementById(seElement)
     else if(typeof seElement === "object") seElmnt = seElement
     else seElmnt = document.body
+    if(seType==="comp") {
+        console.warn(SeMessage.compFileWarn)
+        SeObject.comps[seFile.split(".html").join("")] = "<<<SE_WAITING>>>"
+    }
     if(seType==="js") console.warn(SeMessage.jsImportWarn)
-    else if(seType==="comp") console.warn(SeMessage.compCompiledWarn)
     else _seLoad("se-"+seType, seFile, seElmnt) //load file
 }
 /** 
@@ -285,8 +289,10 @@ export function reactComp(seId, seComp, seTarget, seData){
 export function compSet(seComp,seData){
     var seCompWaiter = setInterval(function(){ //wait for loaded components
         if(typeof SeObject.comps[seComp.component] === "string"){
-            seComp.element.innerHTML = _seCompParse(seData, SeObject.comps[seComp.component]).split("$#?").join(seComp.id) //also set comp id in component
-            clearInterval(seCompWaiter)//kill waiter
+            if(SeObject.comps[seComp.component] !== "<<<SE_WAITING>>>"){
+                seComp.element.innerHTML = _seCompParse(seData, SeObject.comps[seComp.component]).split("$#?").join(seComp.id) //also set comp id in component
+                clearInterval(seCompWaiter)//kill waiter
+            }
         }
     },2)
     _seIntervalTimeout(seCompWaiter)
@@ -514,7 +520,7 @@ function _seCompDeploy(){
     if(SeMessage.compCompiled !== "" && SeMessage.compCompiled !== "!"){//if never deploy js engine before
         _seAdd("se-js",null,"__SEEXPRESSION__=(a,b)=>{switch(a){default: return true;"+SeMessage.compCompiled+"}}",document.body) //deploy
         SeMessage.compCompiled = "!" //clean
-    }else console.warn(SeMessage.compCompiledWarn)
+    }
 }
 function _seIntervalTimeout(_seInterval){//kill interval if out of time
     setTimeout(function(){
