@@ -571,6 +571,28 @@ Now for our HTML component:
     <h1> Our basket is empty! <h1>
 }?
 ```
+Here is a full source code:
+```javascript
+import * as Se from "./js/se.js"
+
+Se.res("comp","fruitComponent",`
+?if($fruits){
+    <h1> Our Basket </h1>
+    <ol>
+        $fruits{
+            <li> $[] </li>
+        }fruits$
+    </ol>
+}?
+?else{
+    <h1> Our basket is empty! <h1>
+}?
+`)
+var data = {
+    fruits: ["Apple","Banana","Cherry","Durian"]
+}
+new Se.comp('myFruit','fruitComponent',data)
+```
 
 ---
 ### Event Handling
@@ -585,7 +607,7 @@ Generally, both of these are seperated, and can't be accessed by each other, esp
 
 However, using `window` to declare things is considerd a "bad practice", since it increases JavaScript engine overhead, reduces code maintainability, and risk of unexpected default scope changes. So there is a solution for this.
 
-In Se.JS, there is a space called `Se.global`, which is used for declaring anything you wanted for the browser environment (since putting anything in global scope is a bad practice) In a module script, we can provide a new thing uisng `Se.global` like this:
+In Se.JS, there is a space called `Se.global`, which is used for declaring anything you wanted for the browser environment (since putting anything in global scope is a bad practice) In a module script, we can provide a new thing inside `Se.global` like this:
 ```javascript
 import * as Se from "./js/se.js"
 

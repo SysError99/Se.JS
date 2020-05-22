@@ -198,8 +198,8 @@ export function comp(seId, seComp, seTarget, seData) {
     this.element = _seCompElement(seTarget)
     if(typeof seComp === "string") this.component = seComp //set component
     if(seComp !== ""){//if comp is set
-        if(typeof seData === "object") this._data //if there is data in parameters
-        else if(typeof seTarget === "object" && !_seIsElement(seTarget)) this._data //if parmeter "target" is data
+        if(typeof seData === "object") this._data = seData//if there is data in parameters
+        else if(typeof seTarget === "object" && !_seIsElement(seTarget)) this._data = seTarget//if parmeter "target" is data
         compSet(this, this._data)
     }
     SeObject.acmps.push(this)
