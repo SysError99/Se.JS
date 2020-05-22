@@ -475,6 +475,7 @@ let data = {
 let postComment = new Se.comp("post",data)
 ```
 And we are all set for this part!
+> Note: Any value assigned to the component with dollar sign `($)` must be exist. Se.JS component will not automatically delete them if assigned data do not exist. At least, they must be empty, or you will have a strange tags or dollar sign values like `$something`
 
 ---
 ### Reactive Component
@@ -486,7 +487,7 @@ var comp = new Se.reactComp("compName", data, target)
 ```
 When `"compName"` stands for component name, `data` stand for data to be bound (can be left empty), and `target` stands for ID to target to be bound by the component.
 
-Everytime you want to get or set some data, simply type `comp.data` followed by anything you want, like `comp
+Everytime you want to get or set some data, simply type `comp.data` followed by anything you want, like `comp.data.name = "John"`. When you change the value, the component will get updated instantly.
 
 ---
 ### Empty Object Properties
