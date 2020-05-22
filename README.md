@@ -643,3 +643,59 @@ Se.global.fruitEdit = function(pos){
     comp.data.fruits[pos] = prompt('Enter new fruit name: ')
 }
 ```
+
+---
+### Component Name
+Unlike many JavaScript frameworks, in Se.JS, there is no way specifically provided for components to have their own functions (You can implement them, but you can't use them) So, to make components be able to use the same function, you have to `name` a component.
+
+Name being used for a component can be number, or string:
+```javascript
+var object = new Se.comp("myName")
+```
+You can also find a component using name with `Se.where()` function
+```javascript
+var objFound = Se.where("myName")
+```
+In a component structure, to access a component name, simply put `$#?` in anywhere you want to delare it:
+```javascript
+Se.res("comp","myComponent",`
+    <h1> My name is $#?. </h1>
+`)
+```
+To implement functions be able to be used by many of components, we can declare an array for storing components Let's take a look for an example. We need many `post` components:
+```javascript
+import * as Se from "./js/se.js"
+
+Se.res("comp","postComponent",`
+<div id="$#?" "class="post">
+    <h6> Post number $#? <h6>
+    $text<br>
+    <button onclick="Se.postLike($#?)">$like Like</button>
+    <button onclick="Se.postComment($#?)">Comment</button><br>
+    $comment
+</div>
+`)
+//create an array for post components.
+const posts = []
+function newPost (){
+    //component name can be a number.
+    posts.push(new Se.reactComp(posts.length,"postComponent",{
+        text: "This is a post.",
+        like: 0,
+        comment: ""
+    }))
+}
+Se.global.postLike = function(pos){
+    posts[pos].data.like++
+    alert("You have liked post number "+pos)
+}
+Se.global.postComment = function(pos){
+    posts[pos].data.comment = prompt("Your comment: ")
+}
+//let's simulate two posts
+var rp = 2
+while(rp--) newPost()
+```
+Now components are able to use same functions!
+
+*This method is 'highly' recommended if you want to create dynamically loaded contents for your website, since it is more device friendly and does not take much of system resources.*
