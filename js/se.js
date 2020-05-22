@@ -3,9 +3,6 @@
  * @author SysError99 (SysError_)
  * @version 0.1
  */
-/**
- * An object contains error messages in the framework
- */
 const SeMessage = {
     compNameInvalid: "Invalid name of seComp (is it a string?)",
     compCompileErr0_0: "Unusual characters betweetn \"?\" and \"(\" or between \")\" and \"{\" of the component \"",
@@ -15,9 +12,6 @@ const SeMessage = {
     XhttpErr: "XMLHttpRequest failed, is it supported?",
     compCompiled:""
 }
-/**
- * An object of the framework.
- */
 const SeObject = {
     requestHeaders: [], //request headers [n] ["header": "value"]
     modules: ["se-html", "se-css"], //modules to be loaded via se.invoke()
@@ -43,20 +37,21 @@ export function addRequestHeader(seHeader, seValue){
  */
 export function clearRequestHeader(){SeObject.requestHeaders = []}
 /**
- * 
+ * Make a request.
  * @param {string} seMethod Request method GET, POST
  * @param {string} seTarget Target of request (ex: script.php)
+ * @param {string} seData Data to be sent.
  * @param {function} [seFunctionSuccess] Function to be called when request is success.
  * @param {function} [seFunctionFailed] Function to be called when request is failed.
  */
-export function request(seMethod, seTarget, seFunction){
+export function request(seMethod, seTarget, seData, seFunctionSuccess, seFunctionFailed){
     var _seXhttp = _seCreateCORSRequest(seMethod, seTarget, true)
     if(_seXhttp!=null){
         _seXhttp.onreadystatechange = function() {
-            if (this.readyState == 4 && this.status == 200) if(typeof seFunction === "function") seFunction(this.responseText)
-            else seFunctionFailed()
+            if (this.readyState == 4 && this.status == 200) if(typeof seFunctionSuccess === "function") seFunctionSuccess(this.responseText)
+            else if(typeof seFunctionFailed === "function") seFunctionFailed()
         }
-        _seXhttp.send()
+        _seXhttp.send(seData)
     }else throw Error(SeMessage.XhttpErr)
 }
 /**
@@ -488,7 +483,7 @@ function _seCreateCORSRequest(_seMethod, _seUrl, _seAsync){ //CORSRequest
     }return _seXhr
 }
 function _seLoad(_seAttr, _seFile, _seElmnt){ //load from file
-    request("GET", _seFile, function(seResponse){
+    request("GET", _seFile, "", function(seResponse){
         _seAdd(_seAttr, _seFile, seResponse, _seElmnt)
     })
 }
