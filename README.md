@@ -643,4 +643,3 @@ Se.global.fruitEdit = function(pos){
     comp.data.fruits[pos] = prompt('Enter new fruit name: ')
 }
 ```
-As you will see, event handling in Se.JS is simple, but the weakness of this approach is also exist. That means every part of this component can't behave as `Class`es, and not duplicatable.
