@@ -155,6 +155,11 @@ export function elesTag(seTag){return document.getElementsByTagName(seTag)}
  */
 export function ele(seId){return document.getElementById(seId)}
 /**
+ * Shorthand for document.querySelector()
+ * @param {string} seQuery Query string
+ */
+export function qs(seQuery){return document.querySelector(seQuery)}
+/**
  * Objects/functions declared for Se components.
  */
 export var global = SeObject.globs
