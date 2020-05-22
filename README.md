@@ -481,13 +481,14 @@ And we are all set for this part!
 ### Reactive Component
 In modern JavaScript Frameworks, like Vue.js, it provides many cool things to make a development much easier, one of them is `reactive` component.
 
-A `reactive` component is form of component that is "reactive", means that the object has instant reaction with data they received. No need to trigger any events or watchers to make them happen. Se.JS also provides a `reactive` component, which can be useful im some cases, like minor data update. The component can be declared with `Se.reactComp()` prototype.
+A `reactive` component is a form of the component that is "reactive", means that the object has instant reaction with data they received. No need to trigger any events or watchers to make them happen. Se.JS also provides a `reactive` component, which can be useful im some cases, like minor data update. The component can be declared with `Se.reactComp()` prototype.
 ```javascript
 var comp = new Se.reactComp("compName", data, target)
 ```
 When `"compName"` stands for component name, `data` stand for data to be bound (can be left empty), and `target` stands for ID to target to be bound by the component.
 
 Everytime you want to get or set some data, simply type `comp.data` followed by anything you want, like `comp.data.name = "John"`. When you change the value, the component will get updated instantly.
+> If you have to assign many values in one time, or you don't need a reactive website, I'd suggest you to use regular `Se.comp()` instead.
 
 ---
 ### Empty Object Properties
