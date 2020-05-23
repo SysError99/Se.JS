@@ -194,6 +194,7 @@ export function comp(seId, seComp, seTarget, seData) {
     _seCompDeploy()
     this.id = seId
     this._data = {}
+    this.data = this._data
     this.component = ""
     this.element = _seCompElement(seTarget)
     if(typeof seComp === "string") this.component = seComp //set component
