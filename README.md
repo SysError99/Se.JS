@@ -748,7 +748,12 @@ Se.JS also provides additional features to make development easier.
 - `str` Data to be used as resource.
 - `element` Element to be added in (for `css` and `comp`, this is an optional)
 
-6. `Se.unload(type, name)` Remove resource.
+6. `Se.resFile(type, name, element)` Add a resource with a text-based file.
+- `type` Resource type (`html`, `css`,`comp`)
+- `name` Text-based file location.
+- `element` Element to be added in (for `css` and `comp`, this is an optional)
+
+7. `Se.unload(type, name)` Remove resource.
 - `type` Type of resource:
  + `css` Delete all CSS
  + `comp` Delete comp that is named `name`
