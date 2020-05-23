@@ -166,7 +166,7 @@ export function qs(seQuery){return document.querySelector(seQuery)}
 /**
  * Objects/functions declared for Se components.
  */
-export var global = SeObject.globs
+export const global = SeObject.globs
 /**
  * Find a component with name
  * @param {string|number} seName name of the component
