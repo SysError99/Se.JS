@@ -722,3 +722,69 @@ while(rp--) newPost()
 Now components are able to use same functions!
 
 *This method is 'highly' recommended if you want to create dynamically loaded contents for your website, since it is more device friendly and does not take much of system resources.*
+
+---
+## Other Things
+Se.JS also provides additional features to make development easier. 
+
+### Resource Category
+1. `Se.request(method, target, data, onsuccess, onfail)` performs XMLHTTPRequest
+- `method` Request method (such as 'GET', 'POST')
+- `target` Request target (URL of a target)
+- `data` Data to be sent.
+- `onsuccess` Function to be called when a request is successful (this also provides `responseText` attribute)
+- `onfailed` Function to be called when a request is failed.
+
+2. `Se.invoke()` Invoke all `se-*` attributes in HTML file
+*This performs automatically once*
+
+3. `Se.res(type, name, str, element)` Add a resource with a string.
+- `type` Resource type (`html`, `css`,`comp`)
+- `name` Resource name.
+- `str` Data to be used as resource.
+- `element` Element to be added in (for `css` and `comp`, this is an optional)
+
+4. `Se.unload(type, name)` Remove resource.
+- `type` Type of resource:
+ + `css` Delete all CSS
+ + `comp` Delete comp that is named `name`
+ + Others, cleanup innerHTML of an element.
+
+### Element Category
+1. `Se.elesClass(class)` Find elements by class name.
+
+2. `Se.elesName(name)` Find elements with `name` attribute
+
+3. `Se.elesNS(ns,name)` Find elements with namespace.
+
+4. `Se.elesTag(tag)` Find elements with HTML tag.
+
+5. `Se.ele(id)` Find an element with ID.
+
+6. `Se.qs(query)` Performs `document.querySelector()` method.
+
+### Global Value Category
+1. `Se.global` A Global value for `Se.JS`.
+
+### Component Cagetory
+1. `Se.where(id)` Find a component by ID.
+
+2. `new Se.comp(id,comp,target, data)` Create a static component.
+- `id` Component ID.
+- `comp` Component name.
+- `target` Target element to be bound with a component.
+- `data` Data to be used for a component.
+
+3. (Prototype) `@comp.set(data)` Set a component using `data`
+
+4. (Prototype) `@comp.visibility(visible)` Set a visibility for a component.
+
+5. (Prototype) `@comp.clean()` Wipe innerHTML inside a component.
+
+6. (Prototype) `@comp.kill()` Kill (delete) a component.
+
+7. `new Se.reactComp(id,comp,target, data)` Create a reactive component.
+- `id` Component ID.
+- `comp` Component name.
+- `target` Target element to be bound with a component.
+- `data` Data to be used for a component

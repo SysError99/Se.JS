@@ -166,7 +166,7 @@ export function qs(seQuery){return document.querySelector(seQuery)}
 /**
  * Objects/functions declared for Se components.
  */
-export var global = SeObject.globs
+export const global = SeObject.globs
 /**
  * Find a component with name
  * @param {string|number} seName name of the component
@@ -194,6 +194,7 @@ export function comp(seId, seComp, seTarget, seData) {
     _seCompDeploy()
     this.id = seId
     this._data = {}
+    this.data = this._data
     this.component = ""
     this.element = _seCompElement(seTarget)
     if(typeof seComp === "string") this.component = seComp //set component
