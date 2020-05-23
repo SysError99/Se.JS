@@ -728,23 +728,27 @@ Now components are able to use same functions!
 Se.JS also provides additional features to make development easier. 
 
 ### Resource Category
-1. `Se.request(method, target, data, onsuccess, onfail)` performs XMLHTTPRequest
+1. `Se.addRequestHeader(header, value)` Add a request `header` with `value` for XMLHTTPRequest.
+
+2. `Se.clearRequestHeader()` Clear all request headers.
+
+3. `Se.request(method, target, data, onsuccess, onfail)` performs XMLHTTPRequest
 - `method` Request method (such as 'GET', 'POST')
 - `target` Request target (URL of a target)
 - `data` Data to be sent.
 - `onsuccess` Function to be called when a request is successful (this also provides `responseText` attribute)
 - `onfailed` Function to be called when a request is failed.
 
-2. `Se.invoke()` Invoke all `se-*` attributes in HTML file
+4. `Se.invoke()` Invoke all `se-*` attributes in HTML file
 *This performs automatically once*
 
-3. `Se.res(type, name, str, element)` Add a resource with a string.
+5. `Se.res(type, name, str, element)` Add a resource with a string.
 - `type` Resource type (`html`, `css`,`comp`)
 - `name` Resource name.
 - `str` Data to be used as resource.
 - `element` Element to be added in (for `css` and `comp`, this is an optional)
 
-4. `Se.unload(type, name)` Remove resource.
+6. `Se.unload(type, name)` Remove resource.
 - `type` Type of resource:
  + `css` Delete all CSS
  + `comp` Delete comp that is named `name`
