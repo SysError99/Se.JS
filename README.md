@@ -777,7 +777,9 @@ Se.JS also provides additional features to make development easier.
 
 3. (Prototype) `@comp.set(data)` Set a component using `data`
 
-4. (Prototype) `@comp.visibility(visible)` Set a visibility for a component.
+4. (Prototype) `@comp.visibility(visible)` Set `style.visibility` for a component.
+
+5. (Prototype) `@comp.display(display)` Set a component's `style.display` attribute.
 
 5. (Prototype) `@comp.clean()` Wipe innerHTML inside a component.
 
