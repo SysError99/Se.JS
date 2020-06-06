@@ -515,13 +515,16 @@ $name{
     <h1> I don't know your name! </h1>
 }name!
 ```
-This structure can also be applied to `array` too. To access your data inside array, simply put `$[]` inside the component you want to access, using `$@` will tell a position of data:
+
+---
+### Single-value Arrayed Component
+To access single-valued data inside array, simply create `arrayed component`, then put `$[]` inside the component where you want the data to be shown. Using `$@` will tell a position of the data. For this example, we have data like this:
 ```javascript
 var data = {
     contact:["John", "Leona", "Bruce"]
 }
 ```
-HTML:
+In HTML code, it looks like this:
 ```html
 <div id="contact">
     <ol>
