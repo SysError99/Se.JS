@@ -185,23 +185,25 @@ let data = {
 ```
 This can be a nightmare, and extremely hard to maintain a clean and reusable code. But in Se.JS, this can be solved quickly and easily. Let's get started.
 
-In your web page javascript file, use function `Se.res()` to create a reusable `component` resource for the page, then write base of HTML file for this data.
+In your web page javascript file, use function `Se.res()` to create a reusable `component` resource for the page, then write base of HTML component for this data.
 
-If we figure out how the data looks like, so there are 3 sub parts of them, so our HTML component should look like this:
+Let's start with creating a new component with `Se.res()` first!
 ```javascript
 import * as Se from "./js/se.js"
 
-//Create a component for our post data.
-Se.res("comp","post",`
+//Create a component for our post.
+var postComponent = Se.res("comp",`
     <!--HTML Goes Here--->
 `)
 ```
-When `"comp"` stands for the `component` (other res types can also be used, including `"css"`, `"html"`, but they are more easier using attributes in the HTML file), `"post"` stands for component name, and the last parameter is where we put HTML code in. But before continue, we need to understand how the component works first.
+When `"comp"` stands for `component` (other res types can also be used, including `"css"`, `"html"`, but they are more easier using attributes in the HTML file). But before continue, we need to understand how the component works first.
 
 ---
 ### Object Properties
 
-Every object in JavaScript has an ability to store their properties. If you want to render them in the component, simply use a dollar sign (`$`), followed by your object property name. It can be used at any parts in your HTML code, as follows: 
+Every object in JavaScript has an ability to store their properties. For `Se.res()`, it will be used to render values in the component, by simply use a dollar sign (`$`), followed by your object property name. It can be used at any parts in your HTML component code.
+
+If we figure out how the data looks like, so there are 3 sub parts of them, so our HTML component should look like this:
 ```html
     <div id="$id-post" class="post">
 
@@ -260,16 +262,16 @@ Every object in JavaScript has an ability to store their properties. If you want
 Now we're able to render our object properties in our component, but what about array? In the example data, we have 2 stacks of the array, so what to do next? Simple, just put them in an `array bracket`! Let's have a look at our data again, now I will simplify them just to do you get the point:
 ```javascript
 let data = {
-    //... object properties here...//
+    //... data object ...//
     comment:[
         {
-            //... object properties here...//
+            //... comment object...//
             comment:[
                 {
-                    //... object properties here...//
+                    //... sub-comment number 1 ...//
                 },
                 {
-                    //... object properties here...//
+                    //... sub-comment number 2 ...//
                 }
             ]
         }
@@ -353,19 +355,19 @@ Now let's put `array bracket`s in! It should look like this:
 
     </div>
 ```
-And that's it! Now you have complete reusable component for your web page. Let's put some code to make a magic happen! Do you still remember component name of this example? It is `"post"`! Now put it in `Se.comp()`!
+And that's it! Now you have complete reusable component for your web page. Let's put some code to make a magic happen! Do you still remember component name of this example? It is `postComponemt`! Let's build a component with `Se.comp()`!
 ```javascript
 //This command creates a component, then instantly show the result.
-let postComment = new Se.comp("objPost", "post", data)
+let post = new Se.comp("objPost", postComponent, data)
 ```
-When `"objPost"` stands for component ID (string can also be used), `"post"` stands for component name that wil be used, and `data` stands for data to be bound (can be left empty)
+When `"objPost"` stands for element ID in HTML (string can also be used), `postComponent` stands for component object that wil be used, and `data` stands for data to be bound (can be left empty)
 
 To summarise, all of the rest should look like this:
 ```javascript
 import * as Se from "./js/se.js"
 
 //Create a component named "post"
-Se.res("comp","post",`
+let postComponent = Se.res("comp",`
     <div id="$id-post" class="post">
 
         <!-- Post -->
@@ -474,7 +476,7 @@ let data = {
     ]
 }
 //Create component using "post" component, and bind the data.
-let postComment = new Se.comp("objPost", "post",data)
+let post = new Se.comp("objPost", postComponent, data)
 ```
 And we are all set for this part!
 > Note: Any value assigned to the component with dollar sign `($)` must be exist. Se.JS component will not automatically delete them if assigned data do not exist. At least, they must be empty, or you will have a strange tags or dollar sign values like `$something`
@@ -485,12 +487,12 @@ In modern JavaScript Frameworks, like Vue.js, it provides many cool things to ma
 
 A `reactive` component is a form of the component that is "reactive", means that the object has instant reaction with data they received. No need to trigger any events or watchers to make them happen. Se.JS also provides a `reactive` component, which can be useful in some cases, like minor data update. The component can be declared with `Se.reactComp()` prototype.
 ```javascript
-var comp = new Se.reactComp("compId","compName", data, target)
+var comp = new Se.reactComp("compId", compObject, data, target)
 ```
-When `"compId"` stands for component ID, `"compName"` stands for component name, `data` stand for data to be bound (can be left empty), and `target` stands for ID to target to be bound by the component.
+When `"compId"` stands for component ID, `componentObject` stands for component object, `data` stand for data to be bound (can be left empty), and `target` stands for ID to target to be bound by the component.
 
 Everytime you want to get or set some data, simply type `comp.data` followed by anything you want, like `comp.data.name = "John"`. When you change the value, the component will get updated instantly.
-> If you have to assign many values in one time, or you don't need a reactive website, I'd suggest you to use regular `Se.comp()` instead.
+> If you have to assign many values in one time, or you don't need a reactive website, I'd suggest you to use regular `Se.comp()` instead, and use `Se.compSet()` to update data manually.
 
 ---
 ### Empty Object Properties
@@ -578,7 +580,7 @@ Here is a full source code:
 ```javascript
 import * as Se from "./js/se.js"
 
-Se.res("comp","fruitComponent",`
+let fruitComponent = Se.res("comp",`
 ?if($fruits){
     <h1> Our Basket </h1>
     <ol>
@@ -594,7 +596,7 @@ Se.res("comp","fruitComponent",`
 var data = {
     fruits: ["Apple","Banana","Cherry","Durian"]
 }
-new Se.comp('myFruit','fruitComponent',data)
+new Se.comp('myFruit',fruitComponent,data)
 ```
 
 ---
@@ -632,7 +634,7 @@ To do a combination with `component` we can use symbol `$@` to define a position
 import * as Se from "./js/se.js"
 
 //component resource
-Se.res("comp","fruitBasketApp",`
+let fruitBasketApp = Se.res("comp",`
 <h2> Fruit Basket </h2>
 <input id="fruit-name" type="text"><br><br>
 
@@ -655,7 +657,7 @@ Se.res("comp","fruitBasketApp",`
 `)
 
 //component
-let comp = new Se.reactComp('myApp', 'fruitBasketApp',{
+let comp = new Se.reactComp('myApp', fruitBasketApp,{
     fruits:[]
 })
 
@@ -675,7 +677,7 @@ Unlike many JavaScript frameworks, in Se.JS, there is no way specifically provid
 
 Component ID being used for a component can be number, or string:
 ```javascript
-var object = new Se.comp("myName")
+var object = new Se.comp("myName",...)
 ```
 You can also find a component using ID with `Se.where()` function
 ```javascript
