@@ -634,7 +634,7 @@ To do a combination with `component` we can use symbol `$@` to define a position
 import * as Se from "./js/se.js"
 
 //component resource
-let fruitBasketApp = Se.res("comp","fruitBasketApp",`
+let fruitBasketApp = Se.res("comp",`
 <h2> Fruit Basket </h2>
 <input id="fruit-name" type="text"><br><br>
 
