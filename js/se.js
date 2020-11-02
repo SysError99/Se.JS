@@ -4,7 +4,7 @@
  * @version 0.1
  */
 const SeMessage = {
-    compNameInvalid: "Invalid name of compName (is it a string?)",
+    compInvalid: "Invalid compObject",
     compIdEmptyErr: "Component ID as string cannot be empty!",
     compIdBoolErr: "Component ID cannot be boolean!",
     compIdObjErr: "Component ID cannot be object!",
@@ -21,7 +21,6 @@ const SeObject = {
     modules: ["se-html", "se-css"], //modules to be loaded via se.invoke()
     css: document.createElement("style"), //css storage
     js: document.createElement("script"), //javascript storage
-    comps:[], //components
     conds:[], //conditional components (by block stack)
     globs:{}, //global declare for Se related things
     acmps:[] //active components
@@ -76,11 +75,11 @@ export function invoke() {
 /**
  * Load resource from a string.
  * @param {string} resType Resource type to be imported in (se-*)
- * @param {string} resName Resource name (Required for se-comp, leave "" for others)
  * @param {string} resString Resource as string to be loaded.
  * @param {string|object} resElement Element type to append (Optional)
+ * @returns {object|null} If resType is 'comp', this will return a component
 */
-export function res(resType, resName, resString, resElement) {
+export function res(resType, resString, resElement) {
     if(SeMessage.compCompiled === "!") console.warn(SeMessage.compCompiledWarn) //if compiled
     var seElmnt = null
     var seCheckedName
@@ -88,9 +87,7 @@ export function res(resType, resName, resString, resElement) {
     if(typeof resElement === "string") seElmnt = document.getElementById(resElement)
     else if(typeof resElement === "object") seElmnt = resElement
     else seElmnt = document.body
-    //check against resource name
-    if(typeof resName === "string") seCheckedName = resName
-    if(typeof seCheckedName === "string") _seAdd("se-"+resType, seCheckedName, resString, seElmnt) //add
+    return _seAdd("se-"+resType, resString, seElmnt) //add
 }
 /**
  * Load resource from a file.
@@ -106,23 +103,19 @@ export function resFile(resType, resFile, resElement) {
     else seElmnt = document.body
     if(resType==="comp") {
         console.warn(SeMessage.compFileWarn)
-        SeObject.comps[resFile.split(".html").join("")] = "<<<SE_WAITING>>>"
     }
     if(resType==="js") console.warn(SeMessage.jsImportWarn)
     else _seLoad("se-"+resType, resFile, seElmnt) //load file
+    return null
 }
 /** 
  * Unload resources
- * @param {target} targetElementId Type of things of be unloaded, or 'comp' (css, elementId)
+ * @param {target} targetElementId Type of things of be unloaded.
  * @param {string} targetLocation Location of target to be unloaded (for comp)
  */
-export function unload(targetElementId, targetLocation) {
+export function unload(targetElementId) {
     //CSS
     if(targetElementId === "css") SeObject.css.innerHTML = ""
-    //Component
-    else if(targetElementId === "comp"){
-        if(typeof targetLocation === "string") SeObject.comps[targetLocation] = ""
-    }
     //Elements
     else{
         var seElmnt = document.getElementById(resElement)
@@ -184,21 +177,22 @@ export function where(resName){
 /**
  * Create an element from component
  * @param {string|number} elementId Element ID. 
- * @param {string} [compName] Loaded component location (without file extension)
+ * @param {string} [compObject] Component object
  * @param {string|object} [targetElementId] Target to insert this component in (optional, append to document.body by default)
  * @param {array|object} [dataObject] Data to be put in.
  * @returns {object} A component object.
  */
-export function comp(elementId, compName, targetElementId, dataObject) {
+export function comp(elementId, compObject, targetElementId, dataObject) {
+    if(typeof compObject !== "object")
+        throw Error(SeMessage.compInvalid)
     _seCheckCompId(elementId)
     _seCompDeploy()
     this.id = elementId
     this._data = {}
     this.data = this._data
-    this.component = ""
+    this.component = compObject //set component
     this.element = _seCompElement(targetElementId)
-    if(typeof compName === "string") this.component = compName //set component
-    if(compName !== ""){//if comp is set
+    if(compObject !== ""){//if comp is set
         if(typeof dataObject === "object") this._data = dataObject//if there is data in parameters
         else if(typeof targetElementId === "object" && !_seIsElement(targetElementId)) this._data = targetElementId//if parmeter "target" is data
         compSet(this, this._data)
@@ -250,20 +244,21 @@ comp.prototype.kill = function() { compKill (this) }
 /**
  * Create a reactive element from component
  * @param {string|number} elementId Element ID. 
- * @param {string} [compName] Loaded component location (without file extension)
+ * @param {string} [compObject] Loaded component location (without file extension)
  * @param {string|object} [targetElementId] Target to insert this component in (optional, append to document.body by default)
  * @param {array|object} [dataObject] Data to be put in.
  * @returns {object} A component object.
  */
-export function reactComp(elementId, compName, targetElementId, dataObject){
+export function reactComp(elementId, compObject, targetElementId, dataObject){
+    if(typeof compObject !== "object")
+        throw Error(SeMessage.compInvalid)
     _seCheckCompId(elementId)
     _seCompDeploy()
     this.id = elementId
     this._data = {}
-    this.component = ""
+    this.component = compObject //set component
     this.element = _seCompElement(targetElementId)
-    if(typeof compName === "string") this.component = compName //set component
-    if(compName !== ""){//if comp is set
+    if(compObject !== ""){//if comp is set
         if(typeof dataObject === "object") this._data = dataObject //if there is data in parameters
         else if(typeof targetElementId === "object" && !_seIsElement(targetElementId)) this._data = targetElementId //if parmeter "target" is data
         compSet(this, this._data)
@@ -284,29 +279,31 @@ export function reactComp(elementId, compName, targetElementId, dataObject){
 }reactComp.prototype = Object.create(comp.prototype)
 /**
  * Fetch data to component.
- * @param {object} compName Target component.
+ * @param {object} compObject Component object.
  * @param {object} dataObject Object of data to be used.
  */
-export function compSet(compName,dataObject){
+export function compSet(compObject, dataObject){
     var seCompWaiter = setInterval(function(){ //wait for loaded components
-        if(typeof SeObject.comps[compName.component] === "string"){
-            if(SeObject.comps[compName.component] !== "<<<SE_WAITING>>>"){
-                compName.element.innerHTML = _seCompParse(dataObject, SeObject.comps[compName.component]).split("$#?").join(compName.id) //also set comp id in component
-                clearInterval(seCompWaiter)//kill waiter
-            }
+        if(typeof compObject.component !== 'object')
+            return
+        if(compObject.component === null)
+            return
+        if(compObject.component.str !== '' && compObject.component.str !== null){
+            compObject.element.innerHTML = _seCompParse(dataObject, compObject.component.str).split("$#?").join(compObject.id) //also set comp id in component
+            clearInterval(seCompWaiter)//kill waiter
         }
     },2)
     _seIntervalTimeout(seCompWaiter)
 }
 /**
  * Set visibility of a component.
- * @param {object} compName Target component.
+ * @param {object} compObject Component object.
  * @param {string} visible Visibility.
  */
-export function compVisibility(compName, visible){
+export function compVisibility(compObject, visible){
     var seCompWaiter = setInterval(function(){ //wait for loaded components
-        if(typeof compName.element === "object") {
-            compName.element.style.visibility = visible
+        if(typeof compObject.element === "object") {
+            compObject.element.style.visibility = visible
             clearInterval(seCompWaiter)//kill waiter
         }
     },2)
@@ -314,13 +311,13 @@ export function compVisibility(compName, visible){
 }
 /**
  * Set display mode for a component
- * @param {object} compName Target component
+ * @param {object} compObject Component object
  * @param {string} seCompDisplay Display mode.
  */
-export function compDisplay(compName, seCompDisplay){
+export function compDisplay(compObject, seCompDisplay){
     var seCompWaiter = setInterval(function(){ //wait for loaded components
-        if(typeof compName.element === "object") {
-            compName.element.style.display = seCompDisplay
+        if(typeof compObject.element === "object") {
+            compObject.element.style.display = seCompDisplay
             clearInterval(seCompWaiter)//kill waiter
         }
     },2)
@@ -328,12 +325,12 @@ export function compDisplay(compName, seCompDisplay){
 }
 /**
  * Clean a component (innerHTML)
- * @param {object} compName Target component.
+ * @param {object} compObject Component object.
  */
-export function compClean(compName){
+export function compClean(compObject){
     var seCompWaiter = setInterval(function(){ //wait for loaded components
-        if(typeof compName.element === "object") {
-            compName.element.innerHTML = ""
+        if(typeof compObject.element === "object") {
+            compObject.element.innerHTML = ""
             clearInterval(seCompWaiter)
         }
     },2)
@@ -341,20 +338,20 @@ export function compClean(compName){
 }
 /**
  * Kill a component.
- * @param {object} compName Target component.
+ * @param {object} compObject Component object.
  */
-export function compKill(compName){
+export function compKill(compObject){
     var _seIndex
     for(_seIndex in SeObject.acmps){
-        if(SeObject.acmps[_seIndex] === compName){
+        if(SeObject.acmps[_seIndex] === compObject){
             SeObject.acmps[_seIndex] = null
             break
         }
     }
-    compName.data = null
-    compName._data = null
-    compName.element.parentNode.removeChild(compName.element)
-    compName.element = null
+    compObject.data = null
+    compObject._data = null
+    compObject.element.parentNode.removeChild(compObject.element)
+    compObject.element = null
 }
 function _seRemoveTab(resString){
     var _seTextSplit = resString.split("\n")
@@ -388,7 +385,7 @@ function _seRemoveSpace(resString){
         }
     _sRI++}return _seRemoved
 }
-function _seCompCompile(compStr, seCompName){ //compile component
+function _seCompCompile(compStr){ //compile component
     var _sI = 0
     var _seStack = 0
     var _seStage = 0
@@ -427,7 +424,7 @@ function _seCompCompile(compStr, seCompName){ //compile component
                 if(_seTxt === "{") {
                     _seStack = 1
                     _seStage = 4
-                }else throw Error(SeMessage.compCompileErr0_0 + seCompName + SeMessage.compCompileErr0_1) //wrong syntax
+                }else throw Error(SeMessage.compCompileErr0_0 + SeMessage.compCompileErr0_1) //wrong syntax
                 break
             case 4: //find }
                 if(_seTxt === "}" && _seTxts === "?") { //end block, stack-
@@ -519,7 +516,7 @@ function _seCompParse(dataObject, compStr){ //parse component
 }
 function _seCompDeploy(){
     if(SeMessage.compCompiled !== "" && SeMessage.compCompiled !== "!"){//if never deploy js engine before
-        _seAdd("se-js",null,"__SEEXPRESSION__=(a,b)=>{switch(a){default: return true;"+SeMessage.compCompiled+"}}",document.body) //deploy
+        _seAdd("se-js","__SEEXPRESSION__=(a,b)=>{switch(a){default: return true;"+SeMessage.compCompiled+"}}",document.body) //deploy
         SeMessage.compCompiled = "!" //clean
     }
 }
@@ -548,10 +545,11 @@ function _seCreateCORSRequest(corsMethod, corsUrl, corsAsync){ //CORSRequest
 }
 function _seLoad(attribute, fileLocation, elementToClean){ //load from file
     request("GET", fileLocation, "", function(seResponse){
-        _seAdd(attribute, fileLocation, seResponse, elementToClean)
+        _seAdd(attribute, seResponse, elementToClean)
     })
 }
-function _seAdd(attribute, fileLocation, responseText, elementToClean){ //add
+function _seAdd(attribute, responseText, elementToClean){ //add
+    let seCompCompiled = null
     switch(attribute){
         //HTML
         case "se-html":
@@ -567,10 +565,14 @@ function _seAdd(attribute, fileLocation, responseText, elementToClean){ //add
             break
         //Component
         case "se-comp":
-            SeObject.comps[fileLocation.split(".html").join("")] = _seCompCompile(responseText, fileLocation) //compile component
+            seCompCompiled = _seCompCompile(responseText) //compile component
             break
     }
-    if(elementToClean.getAttribute(attribute) !== null) elementToClean.removeAttribute(attribute) //clean loaded attribute
+    if(elementToClean.getAttribute(attribute) !== null)
+        elementToClean.removeAttribute(attribute) //clean loaded attribute
+    return {
+        str: seCompCompiled
+    }
 }
 function _seIsElement(object){
     return (

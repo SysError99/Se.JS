@@ -14,7 +14,7 @@ Se.global.reverse = function(number){
 }
 
 //Setup Resources
-Se.res("comp","table",/*html*/`
+let tableComponent = Se.res("comp",/*html*/`
 <h1>Contacts</h1>
 <table>
     <tr>
@@ -104,4 +104,4 @@ let data = {
 }
 
 //Create a component!
-Se.global.comp = new Se.reactComp("ContactsTable", "table", "root", data)
+Se.global.comp = new Se.reactComp("ContactsTable", tableComponent, "root", data)
