@@ -158,7 +158,7 @@ export function qs(queryStr){return document.querySelector(queryStr)}
 /**
  * Se.JS App container.
  */
-export const app = {}
+export var app = {}
 /**
  * Find a component with name
  * @param {string|number} resName name of the component
