@@ -158,7 +158,7 @@ export function qs(queryStr){return document.querySelector(queryStr)}
 /**
  * Se.JS App container.
  */
-export const appContainer = {}
+export const app = {}
 /**
  * Find a component with name
  * @param {string|number} resName name of the component
@@ -584,6 +584,6 @@ function _se(){
     var _seDocHead  = document.getElementsByTagName('head')[0]
     _seDocHead.appendChild(SeObject.css)
     _seDocHead.appendChild(SeObject.js)
-    window.SeJS = appContainer //append function holder to global scope
+    window.SeJS = app //append function holder to global scope
     invoke()
 }_se()
