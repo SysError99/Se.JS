@@ -22,7 +22,6 @@ const SeObject = {
     css: document.createElement("style"), //css storage
     js: document.createElement("script"), //javascript storage
     conds:[], //conditional components (by block stack)
-    globs:{}, //global declare for Se related things
     acmps:[] //active components
 }
 /**
@@ -157,9 +156,9 @@ export function ele(elementId){return document.getElementById(elementId)}
  */
 export function qs(queryStr){return document.querySelector(queryStr)}
 /**
- * Objects/functions declared for Se components.
+ * Se.JS App container.
  */
-export const global = SeObject.globs
+export const appContainer = {}
 /**
  * Find a component with name
  * @param {string|number} resName name of the component
@@ -392,7 +391,7 @@ function _seCompCompile(compStr){ //compile component
     var _seBucket = ""
     var _seStackBlock = 0;
     var _seStartBlock = -1 //save process time
-    var _seCompStr = _seRemoveTab(compStr).split("?if(").join("?(if#").split("?elif(").join("?(elif#").split("?else{").join("?(else#){")
+    var _seCompStr = _seRemoveTab(compStr).split("?if(").join("?(if#").split("?elif(").join("?(elif#").split("?else{").join("?(else#){").split('$.').join('SeJS.')
     while(_sI < _seCompStr.length){ //compile
         var _seTxt = _seCompStr[_sI]
         var _seTxts= _seCompStr[_sI+1]
@@ -585,6 +584,6 @@ function _se(){
     var _seDocHead  = document.getElementsByTagName('head')[0]
     _seDocHead.appendChild(SeObject.css)
     _seDocHead.appendChild(SeObject.js)
-    window.Se = global //append function holder to global scope
+    window.SeJS = appContainer //append function holder to global scope
     invoke()
 }_se()
